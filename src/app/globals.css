@@ -151,4 +151,44 @@
   h3 { font-size: var(--app-h3); }
   h4 { font-size: var(--app-h4); }
   small { font-size: var(--app-small); }
+
+  /* ---- cursor affordances ----
+     Every active interactive element shows a pointer; disabled ones
+     show not-allowed. */
+  button,
+  a,
+  select,
+  summary,
+  label[for],
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="option"],
+  [role="checkbox"],
+  [role="radio"],
+  [role="switch"],
+  [role="combobox"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="color"],
+  input[type="range"],
+  input[type="file"],
+  input[type="submit"] {
+    cursor: pointer;
+  }
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  textarea:disabled,
+  [aria-disabled="true"],
+  [data-disabled] {
+    cursor: not-allowed !important;
+  }
+  input[type="text"]:not(:disabled),
+  input[type="number"]:not(:disabled),
+  input[type="email"]:not(:disabled),
+  input[type="search"]:not(:disabled),
+  textarea:not(:disabled) {
+    cursor: text;
+  }
 }

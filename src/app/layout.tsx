@@ -34,7 +34,9 @@ export default async function RootLayout({
 
   // Inline the saved theme variables so there is no flash of
   // default styling before the client ThemeProvider hydrates.
-  const themeCss = `:root{
+  // `html:root` outranks the `:root{}` blocks in the compiled
+  // stylesheets regardless of load order.
+  const themeCss = `html:root{
     --primary:${theme.primaryColor};
     --accent:${theme.accentColor};
     --background:${theme.backgroundColor};

@@ -30,9 +30,30 @@ const FONT_OPTIONS = [
 export function ThemeEditor() {
   const { theme, setTheme, saveTheme, resetTheme } = useThemeSettings();
   const [saving, setSaving] = React.useState(false);
+  const [autoSaved, setAutoSaved] = React.useState(false);
+  const skipAutoSave = React.useRef(true);
 
   const update = (patch: Partial<ThemeSettings>) =>
     setTheme({ ...theme, ...patch });
+
+  // Auto-persist every change (debounced) so the theme is never lost,
+  // even if the user forgets to press "Save Theme".
+  React.useEffect(() => {
+    if (skipAutoSave.current) {
+      // skip the initial mount — nothing changed yet
+      skipAutoSave.current = false;
+      return;
+    }
+    const t = setTimeout(async () => {
+      try {
+        await saveTheme(theme);
+        setAutoSaved(true);
+      } catch {
+        toast.error("Auto-save failed — use the Save Theme button");
+      }
+    }, 800);
+    return () => clearTimeout(t);
+  }, [theme, saveTheme]);
 
   async function save() {
     setSaving(true);
@@ -64,7 +85,12 @@ export function ThemeEditor() {
         <div>
           <h1>Theme &amp; Appearance</h1>
           <p className="text-muted-foreground">
-            Changes preview live everywhere. Save to persist for all users.
+            Changes preview live everywhere and auto-save as you edit.
+            {autoSaved && (
+              <span className="ml-2 text-xs font-medium text-primary">
+                ✓ Auto-saved
+              </span>
+            )}
           </p>
         </div>
         <div className="flex gap-2">

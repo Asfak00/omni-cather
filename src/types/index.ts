@@ -92,17 +92,24 @@ export interface ContractTotals {
 
 export type DocStatus = "not_signed" | "signed" | "n/a";
 
+export type DocName =
+  | "Banquet Event Order"
+  | "Contract"
+  | "Invoice"
+  | "Kitchen Sheet"
+  | "Menu"
+  | "Proposal";
+
+/** Who each generated PDF is written for */
+export type DocAudience = "Kitchen" | "Staff" | "Manager" | "Client" | "Billing";
+
 export interface EventDocument {
   id: string;
-  name:
-    | "Banquet Event Order"
-    | "Contract"
-    | "Invoice"
-    | "Kitchen Sheet"
-    | "Menu"
-    | "Proposal";
+  name: DocName;
   format: "PDF";
   status: DocStatus;
+  /** target reader — decides what data is extracted into the PDF */
+  audience?: DocAudience;
   /** whether GHL share / email is available */
   shareable: boolean;
   linkable: boolean;

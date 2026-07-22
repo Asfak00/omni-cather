@@ -6,7 +6,9 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import {
   Clock,
+  Download,
   ExternalLink,
+  Eye,
   FileText,
   Link2,
   Mail,
@@ -17,6 +19,7 @@ import {
 } from "lucide-react";
 import type { Contract, EventDocument, RestaurantSettings } from "@/types";
 import { contractTotals, currency, formatTime } from "@/lib/calculations";
+import { DOC_META, docPdfUrl } from "@/lib/docs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -112,7 +115,10 @@ export function DocsView({ contract, settings, ghlLinks }: Props) {
           </TabsTrigger>
           <TabsTrigger value="docs">
             Docs{" "}
-            <Badge className="ml-1 size-5 justify-center rounded-full p-0">
+            <Badge
+              variant="secondary"
+              className="ml-1 size-5 justify-center rounded-full p-0"
+            >
               {contract.documents.length}
             </Badge>
           </TabsTrigger>
@@ -148,67 +154,91 @@ export function DocsView({ contract, settings, ghlLinks }: Props) {
           </div>
 
           <div className="divide-y">
-            {contract.documents.map((doc) => (
-              <div
-                key={doc.id}
-                className="flex flex-wrap items-center justify-between gap-2 py-3"
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="size-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{doc.name}</span>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Paperclip className="size-3" />
-                    {doc.format}
-                  </span>
-                  {doc.status === "not_signed" && (
-                    <Badge
-                      variant="outline"
-                      className="border-red-300 text-[10px] text-red-600"
-                    >
-                      ✎ Not Signed
-                    </Badge>
-                  )}
-                  {doc.status === "signed" && (
-                    <Badge className="bg-emerald-600 text-[10px]">Signed</Badge>
-                  )}
-                </div>
+            {contract.documents.map((doc) => {
+              const meta = DOC_META[doc.name];
+              const pdfUrl = docPdfUrl(contract.id, doc.name);
+              return (
+                <div
+                  key={doc.id}
+                  className="flex flex-wrap items-center justify-between gap-2 py-4"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <FileText className="size-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">{doc.name}</span>
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Paperclip className="size-3" />
+                        {doc.format}
+                      </span>
+                      <Badge variant="secondary" className="text-[10px] uppercase">
+                        {doc.audience ?? meta.audience}
+                      </Badge>
+                      {doc.status === "not_signed" && (
+                        <Badge
+                          variant="outline"
+                          className="border-red-300 text-[10px] text-red-600"
+                        >
+                          ✎ Not Signed
+                        </Badge>
+                      )}
+                      {doc.status === "signed" && (
+                        <Badge className="bg-emerald-600 text-[10px]">Signed</Badge>
+                      )}
+                    </div>
+                    <p className="ml-6 mt-0.5 text-xs text-muted-foreground">
+                      {meta.description}
+                    </p>
+                  </div>
 
-                <div className="flex items-center gap-1">
-                  {doc.shareable && (
-                    <Button variant="outline" size="sm" onClick={() => share(doc)}>
-                      <Share2 className="size-3.5" /> Share
-                    </Button>
-                  )}
-                  {doc.linkable && (
-                    <Button variant="outline" size="sm" onClick={() => copyLink(doc)}>
-                      <Link2 className="size-3.5" /> Link
-                    </Button>
-                  )}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={<Button variant="ghost" size="icon-sm" />}
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      render={<a href={pdfUrl} target="_blank" rel="noopener" />}
+                      variant="secondary"
+                      size="sm"
                     >
-                      <MoreHorizontal className="size-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => email(doc)}>
-                        <Mail className="size-4" /> Email via GHL
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => share(doc)}>
-                        <Share2 className="size-4" /> Open GHL share page
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        render={
-                          <a href={ghlLinks.contact} target="_blank" rel="noopener" />
-                        }
+                      <Eye className="size-3.5" /> View PDF
+                    </Button>
+                    {doc.shareable && (
+                      <Button variant="outline" size="sm" onClick={() => share(doc)}>
+                        <Share2 className="size-3.5" /> Share
+                      </Button>
+                    )}
+                    {doc.linkable && (
+                      <Button variant="outline" size="sm" onClick={() => copyLink(doc)}>
+                        <Link2 className="size-3.5" /> Link
+                      </Button>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={<Button variant="ghost" size="icon-sm" />}
                       >
-                        <ExternalLink className="size-4" /> View contact in GHL
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <MoreHorizontal className="size-4" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          render={<a href={`${pdfUrl}?download=1`} />}
+                        >
+                          <Download className="size-4" /> Download PDF
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => email(doc)}>
+                          <Mail className="size-4" /> Email via GHL
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => share(doc)}>
+                          <Share2 className="size-4" /> Open GHL share page
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          render={
+                            <a href={ghlLinks.contact} target="_blank" rel="noopener" />
+                          }
+                        >
+                          <ExternalLink className="size-4" /> View contact in GHL
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

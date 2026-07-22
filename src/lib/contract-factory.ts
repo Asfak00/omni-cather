@@ -1,4 +1,5 @@
 import type { Contract, EventDocument, GHLContact, RestaurantSettings } from "@/types";
+import { DOC_META } from "@/lib/docs";
 
 const DOC_NAMES: EventDocument["name"][] = [
   "Banquet Event Order",
@@ -26,6 +27,7 @@ export function buildDefaultDocuments(): EventDocument[] {
     format: "PDF",
     // BEO & Contract require signatures, the rest are informational
     status: name === "Banquet Event Order" || name === "Contract" ? "not_signed" : "n/a",
+    audience: DOC_META[name].audience,
     shareable: name !== "Kitchen Sheet",
     linkable: true,
   }));
