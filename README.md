@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GHL Event Manager
 
-## Getting Started
+A custom event / contract management app built on top of **GoHighLevel** for
+restaurants and venues. Contacts arrive from your GHL reservation form, get
+converted into fully-priced event contracts (menus, taxes, gratuity, deposits),
+and produce a document set (BEO, Contract, Invoice, Kitchen Sheet, Menu,
+Proposal) that shares out through GHL.
 
-First, run the development server:
+## The flow
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+GHL reservation form
+      │  (lead lands in GHL contacts)
+      ▼
+Contacts page  ──"Make Contract"──▶  Contract editor
+                                        │  event details · areas · status
+                                        │  Food / Beverage / Other line items
+                                        │  Add from Menu · Add Freehand
+                                        │  billing widget (tax, gratuity,
+                                        │  admin fee, deposit, F&B minimum)
+                                        ▼
+                                   Save & View Docs
+                                        │
+                                        ▼
+                              Documents page (BEO, Contract,
+                              Invoice, Kitchen Sheet, Menu, Proposal)
+                                        │  Share / Email / Link
+                                        ▼
+                              GHL share & email pages
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Next.js 16** (App Router) · **TypeScript** · **Tailwind CSS v4**
+- **shadcn/ui** component library
+- Server-side GHL v2 API client (`src/lib/ghl/`)
+- JSON file persistence (`data/`) behind a one-file storage interface
+  (`src/lib/store/file-store.ts`) — swap for GHL custom objects or a DB
+  without touching UI code
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Getting started
 
-## Learn More
+```bash
+npm install
+cp .env.example .env.local   # add your GHL credentials
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Without credentials the app runs in **demo mode** with mock contacts, so the
+whole flow is testable immediately.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### GHL credentials
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. In your GHL sub-account: **Settings → Private Integrations → New**
+2. Grant `contacts.readonly`, `contacts.write`, `invoices.readonly`, `invoices.write`
+3. Put the `pit-...` token in `GHL_API_KEY` and your location id in `GHL_LOCATION_ID`
 
-## Deploy on Vercel
+## App areas
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Route | What it does |
+|---|---|
+| `/contacts` | Live GHL contact list (search, tags) → "Make Contract" |
+| `/contracts` | All contracts with status + grand total |
+| `/contracts/[id]` | Full contract editor (event details, contacts, menus, line items, billing widget, terms) |
+| `/contracts/[id]/docs` | Document set with Share / Email / Link → GHL pages |
+| `/settings/restaurant` | Menus, taxes & fees, venue areas, owners, event styles/types, default terms |
+| `/settings/theme` | Theme colors, fonts, heading/paragraph sizes, radius — live preview, applied app-wide |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Folder structure
+
+```
+src/
+├── app/                    # routes (App Router)
+│   ├── (dashboard)/        # sidebar layout group
+│   │   ├── contacts/
+│   │   ├── contracts/[id]/(docs)/
+│   │   └── settings/(restaurant|theme)/
+│   └── api/                # route handlers
+│       ├── ghl/contacts/   # proxied GHL contact list
+│       ├── contracts/      # contract CRUD
+│       └── settings/       # restaurant + theme settings
+├── components/
+│   ├── contacts/           # contact table
+│   ├── contract/           # editor sections (line items, billing widget…)
+│   ├── docs/               # documents view
+│   ├── settings/           # menu manager, tax manager, theme editor…
+│   ├── layout/             # sidebar, topbar
+│   ├── theme/              # ThemeProvider (CSS variable injection)
+│   └── ui/                 # shadcn components
+├── lib/
+│   ├── ghl/                # GHL API client + contact normalization
+│   ├── store/              # persistence layer + seed defaults
+│   ├── calculations.ts     # totals, taxes, deposit math
+│   └── contract-factory.ts # new contract from a GHL contact
+└── types/                  # shared domain types
+```
