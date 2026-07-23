@@ -323,7 +323,11 @@ function TotalsBlock({ ctx }: { ctx: Ctx }) {
       </View>
       <View style={s.totalsRow}>
         <Text>
-          Deposit ({b.depositPercent}%) — {b.depositPaid ? "PAID" : "NOT PAID"}
+          Deposit{" "}
+          {(b.depositMode ?? "percent") === "percent"
+            ? `(${b.depositPercent}%)`
+            : "(fixed)"}{" "}
+          — {b.depositPaid ? "PAID" : "NOT PAID"}
         </Text>
         <Text>{currency(t.deposit)}</Text>
       </View>

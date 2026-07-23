@@ -3,6 +3,22 @@ import type { GHLContact } from "@/types";
 /** Mock contacts used when GHL credentials are not configured */
 export const MOCK_CONTACTS: GHLContact[] = [
   {
+    id: "mock-anup",
+    firstName: "Anup",
+    lastName: "Kr Mandal",
+    name: "Anup Kr Mandal",
+    companyName: "WebMakers LTD",
+    email: "anupofficial1@gmail.com",
+    phone: "01716820836",
+    address: "48 Madison Ave",
+    city: "New York",
+    state: "NY",
+    tags: ["lead", "reservation-form"],
+    source: "GHL Web Lead",
+    dateAdded: "2026-07-20T10:34:00.000Z",
+    type: "lead",
+  },
+  {
     id: "mock-kirby",
     firstName: "Kirby",
     lastName: "Testing",

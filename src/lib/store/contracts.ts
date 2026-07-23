@@ -1,10 +1,20 @@
 import type { Contract } from "@/types";
 import { readStore, writeStore } from "./file-store";
+import { getRestaurantSettings } from "./settings";
 
 const STORE = "contracts";
 
 export async function listContracts(): Promise<Contract[]> {
-  return readStore<Contract[]>(STORE, []);
+  const existing = await readStore<Contract[] | null>(STORE, null);
+  if (existing !== null) return existing;
+
+  // First run (no data file yet) → seed realistic demo events so the
+  // whole flow is testable immediately. Deleting all events later
+  // leaves an empty list — demo data only returns via POST /api/demo.
+  const { buildDemoContracts } = await import("./demo-data");
+  const seeded = buildDemoContracts(await getRestaurantSettings());
+  await writeStore(STORE, seeded);
+  return seeded;
 }
 
 export async function getContract(id: string): Promise<Contract | null> {

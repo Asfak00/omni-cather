@@ -4,7 +4,17 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format, isSameDay, differenceInCalendarDays } from "date-fns";
-import { CalendarDays, ChevronDown, Eye, Plus, Search, Users } from "lucide-react";
+import { toast } from "sonner";
+import {
+  CalendarDays,
+  ChevronDown,
+  DatabaseZap,
+  Eye,
+  Loader2,
+  Plus,
+  Search,
+  Users,
+} from "lucide-react";
 import type { Contract, RestaurantSettings } from "@/types";
 import { contractTotals, currency, formatTime } from "@/lib/calculations";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -45,8 +55,24 @@ interface Props {
 }
 
 export function EventsList({ contracts, settings }: Props) {
+  const router = useRouter();
   const [filter, setFilter] = React.useState<Filter>("upcoming");
   const [query, setQuery] = React.useState("");
+  const [seeding, setSeeding] = React.useState(false);
+
+  async function loadDemoData() {
+    setSeeding(true);
+    try {
+      const res = await fetch("/api/demo", { method: "POST" });
+      if (!res.ok) throw new Error();
+      toast.success("Demo events loaded");
+      router.refresh();
+    } catch {
+      toast.error("Failed to load demo data");
+    } finally {
+      setSeeding(false);
+    }
+  }
 
   const today = new Date();
   const q = query.toLowerCase().trim();
@@ -134,7 +160,17 @@ export function EventsList({ contracts, settings }: Props) {
           />
         </div>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          {contracts.length === 0 && (
+            <Button variant="outline" onClick={loadDemoData} disabled={seeding}>
+              {seeding ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <DatabaseZap className="size-4" />
+              )}
+              Load Demo Data
+            </Button>
+          )}
           <Button render={<Link href="/make-contract" />}>
             <Plus className="size-4" /> New Event
           </Button>
