@@ -161,7 +161,7 @@ export function DiscussionTab({ contract, settings, onPatch }: Props) {
                     <Star className="size-4 text-muted-foreground/40" />
                     <Badge
                       variant="outline"
-                      className="border-amber-300 text-[10px] capitalize text-amber-700"
+                      className="border-(--warning)/50 text-[10px] capitalize text-(--warning)"
                     >
                       {m.draft ? "draft" : m.channel}
                     </Badge>
@@ -259,8 +259,8 @@ function ThreadView({
     } else if (channel === "guest") {
       toast.success(
         relayed
-          ? "Message sent via Omni Cather conversation"
-          : "Message saved — will relay via Omni Cather once credentials are connected"
+          ? "Message sent via OmniCather conversation"
+          : "Message saved — will relay via OmniCather once credentials are connected"
       );
     } else {
       toast.success("Staff message posted");
@@ -281,7 +281,7 @@ function ThreadView({
         </span>
         <Badge
           variant="outline"
-          className="border-amber-300 text-[10px] capitalize text-amber-700"
+          className="border-(--warning)/50 text-[10px] capitalize text-(--warning)"
         >
           {channel}
         </Badge>
@@ -346,7 +346,7 @@ function ThreadView({
           {channel === "guest" ? (
             <span className="flex items-center gap-1 rounded-md border bg-muted/40 py-1 pl-3 pr-2 text-sm">
               {contract.contactSnapshot.name}
-              <Badge className="bg-teal-200 text-[9px] uppercase text-teal-900">
+              <Badge className="bg-(--primary)/20 text-[9px] uppercase text-(--primary)">
                 Contact
               </Badge>
               <X className="size-3.5 cursor-pointer text-muted-foreground" />
@@ -400,7 +400,7 @@ function ThreadView({
             <Button variant="outline" size="sm" onClick={() => toast.info("Attach files from the event's Attached Files panel")}>
               <Paperclip className="size-3.5" /> Attachments
             </Button>
-            <Button variant="outline" size="sm" onClick={() => toast.info("File library coming from Omni Cather media storage")}>
+            <Button variant="outline" size="sm" onClick={() => toast.info("File library coming from OmniCather media storage")}>
               <Folder className="size-3.5" /> File Library
             </Button>
             <DropdownMenu>

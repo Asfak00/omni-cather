@@ -18,9 +18,9 @@ import { Badge } from "@/components/ui/badge";
 export const metadata = { title: "Make Contract | Event Manager" };
 
 /**
- * Entry point opened FROM Omni Cather.
+ * Entry point opened FROM OmniCather.
  *
- * Contacts live in the Omni Cather contact list — a "Make Contract"
+ * Contacts live in the OmniCather contact list — a "Make Contract"
  * custom link there opens this page with the contact id. We create
  * (or reuse) a draft contract for that contact and drop the user
  * straight into the contract editor.
@@ -52,7 +52,7 @@ export default async function MakeContractPage({
     }
   }
 
-  // No (valid) contactId → show how to hook this page up in Omni Cather
+  // No (valid) contactId → show how to hook this page up in OmniCather
   const links = ghlAppLinks();
 
   return (
@@ -62,12 +62,12 @@ export default async function MakeContractPage({
         <p className="text-muted-foreground">
           {contactId
             ? `Contact “${contactId}” was not found — check the link and try again.`
-            : "This page is opened from Omni Cather with a contact attached."}
+            : "This page is opened from OmniCather with a contact attached."}
         </p>
       </div>
 
       {contactId && (
-        <Badge variant="outline" className="border-red-300 text-red-600">
+        <Badge variant="outline" className="border-(--danger)/40 text-(--danger)">
           Contact not found
         </Badge>
       )}
@@ -76,24 +76,23 @@ export default async function MakeContractPage({
         <CardHeader>
           <CardTitle>How it works</CardTitle>
           <CardDescription>
-            Contacts stay in Omni Cather — this app takes over from “Make
+            Contacts stay in OmniCather — this app takes over from “Make
             Contract” onwards.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
           <ol className="list-decimal space-y-3 pl-5">
             <li>
-              A reservation form submission creates a contact in your Omni
-              Cather sub-account, as usual.
+              A reservation form submission creates a contact in your OmniCather sub-account, as usual.
             </li>
             <li>
-              In Omni Cather, add a <strong>“Make Contract”</strong> link for
+              In OmniCather, add a <strong>“Make Contract”</strong> link for
               contacts (Custom Menu Link, workflow SMS/email button, or a
               custom field button) pointing to:
               <code className="mt-2 block rounded-md bg-muted px-3 py-2 font-mono text-xs">
                 {"https://<your-app-domain>/make-contract?contactId={{contact.id}}"}
               </code>
-              Omni Cather replaces{" "}
+              OmniCather replaces{" "}
               <code className="rounded bg-muted px-1">{"{{contact.id}}"}</code>{" "}
               with the real contact id when the link is clicked.
             </li>
@@ -104,7 +103,7 @@ export default async function MakeContractPage({
             </li>
             <li>
               Finish the contract (menus, taxes, billing), then share the
-              generated documents back through Omni Cather.
+              generated documents back through OmniCather.
             </li>
           </ol>
 
@@ -115,7 +114,7 @@ export default async function MakeContractPage({
               rel="noopener"
               className="inline-flex items-center gap-1.5 text-primary underline"
             >
-              <ExternalLink className="size-4" /> Open Omni Cather contacts
+              <ExternalLink className="size-4" /> Open OmniCather contacts
             </a>
             <Link
               href="/events"

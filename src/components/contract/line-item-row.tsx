@@ -114,7 +114,7 @@ export function LineItemRow({
             onChange={(description) => onChange({ description })}
           />
           {missingCategory && (
-            <div className="mt-1 rounded-sm bg-red-400/90 px-2 py-0.5 text-center text-[11px] font-medium text-white">
+            <div className="mt-1 rounded-sm bg-(--danger)/80 px-2 py-0.5 text-center text-[11px] font-medium text-white">
               ● No category assigned
             </div>
           )}

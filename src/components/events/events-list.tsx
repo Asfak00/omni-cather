@@ -30,11 +30,11 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const STATUS_CHIP: Record<string, string> = {
-  PROSPECT: "bg-teal-600",
-  TENTATIVE: "bg-rose-500",
-  DEFINITE: "bg-emerald-500",
-  CLOSED: "bg-yellow-600",
-  LOST: "bg-gray-500",
+  PROSPECT: "bg-(--status-prospect)",
+  TENTATIVE: "bg-(--status-tentative)",
+  DEFINITE: "bg-(--status-definite)",
+  CLOSED: "bg-(--status-closed)",
+  LOST: "bg-(--status-lost)",
 };
 
 type Filter = "upcoming" | "all";

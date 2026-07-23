@@ -528,7 +528,7 @@ export function BillingWidget({ contract, totals, onChange }: Props) {
                 >
                   <Badge
                     className={cn(
-                      billing.depositPaid ? "bg-emerald-600" : "bg-red-600"
+                      billing.depositPaid ? "bg-(--success) text-white" : "bg-(--danger) text-white"
                     )}
                   >
                     {billing.depositPaid ? "Paid" : "Not Paid"}

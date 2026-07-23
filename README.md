@@ -1,18 +1,18 @@
-# Event Manager (Omni Cather)
+# Event Manager (OmniCather)
 
-A custom event / contract management app built on top of **Omni Cather** for
-restaurants and venues. Contacts arrive from your Omni Cather reservation form, get
+A custom event / contract management app built on top of **OmniCather** for
+restaurants and venues. Contacts arrive from your OmniCather reservation form, get
 converted into fully-priced event contracts (menus, taxes, gratuity, deposits),
 and produce a document set (BEO, Contract, Invoice, Kitchen Sheet, Menu,
-Proposal) that shares out through Omni Cather.
+Proposal) that shares out through OmniCather.
 
 ## The flow
 
 ```
-Omni Cather reservation form
-      │  (lead lands in Omni Cather contacts — contacts stay there)
+OmniCather reservation form
+      │  (lead lands in OmniCather contacts — contacts stay there)
       ▼
-Omni Cather contact ──"Make Contract" link──▶  /make-contract?contactId={{contact.id}}
+OmniCather contact ──"Make Contract" link──▶  /make-contract?contactId={{contact.id}}
                                         │  (draft auto-created)
                                         ▼
                                      Contract editor
@@ -29,32 +29,32 @@ Omni Cather contact ──"Make Contract" link──▶  /make-contract?contactI
                               Invoice, Kitchen Sheet, Menu, Proposal)
                                         │  Share / Email / Link
                                         ▼
-                              Omni Cather share & email pages
+                              OmniCather share & email pages
 ```
 
 ## Stack
 
 - **Next.js 16** (App Router) · **TypeScript** · **Tailwind CSS v4**
 - **shadcn/ui** component library
-- Server-side Omni Cather API client (`src/lib/ghl/`)
+- Server-side OmniCather API client (`src/lib/ghl/`)
 - JSON file persistence (`data/`) behind a one-file storage interface
-  (`src/lib/store/file-store.ts`) — swap for Omni Cather custom objects or a DB
+  (`src/lib/store/file-store.ts`) — swap for OmniCather custom objects or a DB
   without touching UI code
 
 ## Getting started
 
 ```bash
 npm install
-cp .env.example .env.local   # add your Omni Cather credentials
+cp .env.example .env.local   # add your OmniCather credentials
 npm run dev
 ```
 
 Without credentials the app runs in **demo mode** with mock contacts, so the
 whole flow is testable immediately.
 
-### Omni Cather credentials
+### OmniCather credentials
 
-1. In your Omni Cather sub-account: **Settings → Private Integrations → New**
+1. In your OmniCather sub-account: **Settings → Private Integrations → New**
 2. Grant `contacts.readonly`, `contacts.write`, `invoices.readonly`, `invoices.write`
 3. Put the `pit-...` token in `GHL_API_KEY` and your location id in `GHL_LOCATION_ID`
 
@@ -62,7 +62,7 @@ whole flow is testable immediately.
 
 | Route | What it does |
 |---|---|
-| `/make-contract?contactId=...` | Entry point opened from Omni Cather — auto-creates a draft event + contract for that contact (without a contactId it shows setup instructions) |
+| `/make-contract?contactId=...` | Entry point opened from OmniCather — auto-creates a draft event + contract for that contact (without a contactId it shows setup instructions) |
 | `/events` | Events list grouped Today / Next 7 Days / Beyond, with search + Upcoming/All filter |
 | `/events/[id]` | Event view with tabs: Details, Docs, Discussion, Payments, Tasks, Notes, Log |
 | `/events/[id]/edit` | Event editor (dates via shadcn calendar, guests, managers, lead sources, financial summary, custom fields) |
@@ -97,8 +97,8 @@ reset between cold starts. For durable production data either:
 - set `DATA_DIR` to a mounted persistent disk (self-hosted / Render /
   Railway volumes), or
 - deploy with `npm run build && npm run start` on any Node host, or
-- keep Netlify for the UI and rely on Omni Cather as the source of truth
-  (settings already mirror to an Omni Cather custom value; contacts,
+- keep Netlify for the UI and rely on OmniCather as the source of truth
+  (settings already mirror to an OmniCather custom value; contacts,
   messages and notes sync live).
 
 ## Folder structure
@@ -123,7 +123,7 @@ src/
 │   ├── theme/              # ThemeProvider (CSS variable injection)
 │   └── ui/                 # shadcn components
 ├── lib/
-│   ├── ghl/                # Omni Cather API client + contact normalization
+│   ├── ghl/                # OmniCather API client + contact normalization
 │   ├── store/              # persistence layer + seed defaults
 │   ├── calculations.ts     # totals, taxes, deposit math
 │   └── contract-factory.ts # new contract from a contact

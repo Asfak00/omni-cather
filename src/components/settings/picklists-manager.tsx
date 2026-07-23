@@ -436,7 +436,7 @@ function PicklistEditor({
       <CardContent className="space-y-5 pt-6">
         <h2 className="text-lg font-semibold">Edit Picklist {menu.name}</h2>
 
-        <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div className="flex items-start gap-2 rounded-md border border-(--warning)/40 bg-(--warning)/10 px-4 py-3 text-sm text-(--warning)">
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
           Please note: picklists can be shared among locations you do not have
           access to. Any edits will update this picklist for all locations.

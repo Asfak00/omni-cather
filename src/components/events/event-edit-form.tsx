@@ -27,16 +27,16 @@ import { ContactsSection } from "@/components/contract/contacts-section";
 import { cn } from "@/lib/utils";
 
 const STATUSES: { value: EventStatus; color: string }[] = [
-  { value: "PROSPECT", color: "bg-teal-600" },
-  { value: "TENTATIVE", color: "bg-rose-500" },
-  { value: "DEFINITE", color: "bg-emerald-500" },
-  { value: "CLOSED", color: "bg-yellow-600" },
-  { value: "LOST", color: "bg-gray-500" },
+  { value: "PROSPECT", color: "bg-(--status-prospect)" },
+  { value: "TENTATIVE", color: "bg-(--status-tentative)" },
+  { value: "DEFINITE", color: "bg-(--status-definite)" },
+  { value: "CLOSED", color: "bg-(--status-closed)" },
+  { value: "LOST", color: "bg-(--status-lost)" },
 ];
 
 const LEAD_SOURCE_OPTIONS = [
   "Reservation Form",
-  "Omni Cather Web Lead",
+  "OmniCather Web Lead",
   "Referral",
   "Walk-in",
   "Facebook",
@@ -672,7 +672,7 @@ export function EventEditForm({ initialContract, settings, allContracts }: Props
       </div>
 
       {/* sticky action bar */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-card/95 backdrop-blur md:left-64">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-card/95 backdrop-blur">
         <div className="flex items-center justify-end gap-2 px-6 py-3">
           <Button
             variant="outline"

@@ -2,11 +2,11 @@ import type { EventStatus } from "@/types";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<EventStatus, string> = {
-  PROSPECT: "bg-teal-600 text-white",
-  TENTATIVE: "bg-rose-500 text-white",
-  DEFINITE: "bg-emerald-500 text-white",
-  CLOSED: "bg-yellow-600 text-white",
-  LOST: "bg-gray-500 text-white",
+  PROSPECT: "bg-(--status-prospect) text-white",
+  TENTATIVE: "bg-(--status-tentative) text-white",
+  DEFINITE: "bg-(--status-definite) text-white",
+  CLOSED: "bg-(--status-closed) text-white",
+  LOST: "bg-(--status-lost) text-white",
 };
 
 export function StatusBadge({

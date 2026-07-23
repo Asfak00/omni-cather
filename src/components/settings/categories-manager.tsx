@@ -83,7 +83,7 @@ export function CategoriesManager({ settings, onChange }: Props) {
             <h3 className="mb-3 text-base font-semibold text-primary">
               Default Billing Details
             </h3>
-            <div className="rounded-md border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+            <div className="rounded-md border border-(--info)/30 bg-(--info)/10 px-4 py-3 text-sm text-(--info)">
               The following billing details will be selected by default when
               this Category is selected for a Picklist Item. E.g., if items
               marked with this category should always be included in the

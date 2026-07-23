@@ -362,6 +362,17 @@ export interface ThemeSettings {
   backgroundColor: string;
   foregroundColor: string;
   cardColor: string;
+  /* semantic colors — every colored element in the app uses these */
+  successColor: string; // paid, signed, definite
+  dangerColor: string; // not paid, delete, errors
+  warningColor: string; // new/pending badges, caution notices
+  infoColor: string; // info notices, sync chips
+  /* event status colors */
+  statusProspect: string;
+  statusTentative: string;
+  statusDefinite: string;
+  statusClosed: string;
+  statusLost: string;
   /** font family stacks */
   bodyFont: string;
   headingFont: string;
@@ -384,6 +395,15 @@ export const DEFAULT_THEME: ThemeSettings = {
   backgroundColor: "#f6faf8",
   foregroundColor: "#12241f",
   cardColor: "#ffffff",
+  successColor: "#059669",
+  dangerColor: "#dc2626",
+  warningColor: "#f59e0b",
+  infoColor: "#6366f1",
+  statusProspect: "#0d9488",
+  statusTentative: "#f43f5e",
+  statusDefinite: "#10b981",
+  statusClosed: "#ca8a04",
+  statusLost: "#6b7280",
   bodyFont: "Geist, ui-sans-serif, system-ui, sans-serif",
   headingFont: "Geist, ui-sans-serif, system-ui, sans-serif",
   h1Size: 30,

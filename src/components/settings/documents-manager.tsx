@@ -92,7 +92,7 @@ export function DocumentsManager({ settings, onChange }: Props) {
               <FileText className="size-4 text-muted-foreground" />
               <span className="text-sm font-medium">{layout.name}</span>
               {layout.internal && (
-                <Badge className="bg-teal-100 text-[10px] text-teal-800">
+                <Badge className="bg-(--primary)/15 text-[10px] text-(--primary)">
                   Internal
                 </Badge>
               )}

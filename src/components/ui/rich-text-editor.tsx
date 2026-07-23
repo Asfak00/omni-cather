@@ -183,7 +183,7 @@ export function RichTextEditor({
           className="flex h-7 cursor-pointer items-center gap-0.5 rounded px-1 hover:bg-muted"
           title="Highlight color"
         >
-          <span className="rounded bg-yellow-200 px-0.5 text-xs font-bold text-foreground">
+          <span className="rounded bg-(--warning)/40 px-0.5 text-xs font-bold text-foreground">
             A
           </span>
           <input

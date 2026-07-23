@@ -27,7 +27,9 @@ export async function saveRestaurantSettings(
 }
 
 export async function getThemeSettings(): Promise<ThemeSettings> {
-  return readStore<ThemeSettings>("theme-settings", DEFAULT_THEME);
+  const stored = await readStore<ThemeSettings>("theme-settings", DEFAULT_THEME);
+  // older saved themes may predate newer color fields
+  return { ...DEFAULT_THEME, ...stored };
 }
 
 export async function saveThemeSettings(

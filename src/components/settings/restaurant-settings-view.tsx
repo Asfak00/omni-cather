@@ -42,8 +42,8 @@ export function RestaurantSettingsView({
       setDirty(false);
       toast.success(
         data.ghlSynced
-          ? "Settings saved & synced to Omni Cather"
-          : "Settings saved — Omni Cather sync activates once credentials are connected"
+          ? "Settings saved & synced to OmniCather"
+          : "Settings saved — OmniCather sync activates once credentials are connected"
       );
     } catch {
       toast.error("Failed to save settings");
@@ -88,13 +88,13 @@ export function RestaurantSettingsView({
                 {ghlSynced ? (
                   <>
                     <Cloud className="size-3.5 text-primary" />
-                    <span className="text-primary">Synced to Omni Cather</span>
+                    <span className="text-primary">Synced to OmniCather</span>
                   </>
                 ) : (
                   <>
                     <CloudOff className="size-3.5 text-muted-foreground" />
                     <span className="text-muted-foreground">
-                      Local only (connect Omni Cather to sync)
+                      Local only (connect OmniCather to sync)
                     </span>
                   </>
                 )}

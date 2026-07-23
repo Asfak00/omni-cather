@@ -243,8 +243,8 @@ export function LogTab({
     ...(ghlNotes ?? []).map((n) => ({
       at: n.dateAdded,
       kind: "OMNI",
-      text: `Omni Cather contact note: ${n.body.replace(/<[^>]+>/g, " ").slice(0, 160)}`,
-      by: "Omni Cather",
+      text: `OmniCather contact note: ${n.body.replace(/<[^>]+>/g, " ").slice(0, 160)}`,
+      by: "OmniCather",
     })),
   ].sort((a, b) => (a.at < b.at ? 1 : -1));
 
@@ -256,8 +256,8 @@ export function LogTab({
             <div key={i} className="flex items-start gap-4 px-4 py-3">
               <Badge
                 className={cn(
-                  "mt-0.5 w-14 justify-center bg-teal-100 text-[9px] font-bold text-teal-800",
-                  entry.kind === "OMNI" && "bg-indigo-100 text-indigo-800"
+                  "mt-0.5 w-14 justify-center bg-(--primary)/15 text-[9px] font-bold text-(--primary)",
+                  entry.kind === "OMNI" && "bg-(--info)/15 text-(--info)"
                 )}
               >
                 {entry.kind}

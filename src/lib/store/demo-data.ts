@@ -69,7 +69,7 @@ export function buildDemoContracts(settings: RestaurantSettings): Contract[] {
     mealPeriods: "Lunch",
     ownerId: "owner-barry",
     managerIds: ["owner-kirby"],
-    leadSources: ["Omni Cather Web Lead"],
+    leadSources: ["OmniCather Web Lead"],
     referredBy: "Facebook",
     ticketedEvent: false,
 
@@ -350,7 +350,7 @@ export function buildDemoContracts(settings: RestaurantSettings): Contract[] {
     mealPeriods: "",
     ownerId: "owner-barry",
     managerIds: [],
-    leadSources: ["Reservation Form", "Omni Cather Web Lead"],
+    leadSources: ["Reservation Form", "OmniCather Web Lead"],
     referredBy: "",
     ticketedEvent: false,
 

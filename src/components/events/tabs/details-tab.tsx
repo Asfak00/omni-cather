@@ -120,7 +120,7 @@ export function DetailsTab({ contract, settings, totals, ghlContactUrl }: Props)
               <Row
                 label="Lead"
                 value={
-                  <Badge className="bg-teal-100 font-medium text-teal-800">
+                  <Badge className="bg-(--primary)/15 font-medium text-(--primary)">
                     L&nbsp;&nbsp;{c.name}
                   </Badge>
                 }
@@ -157,8 +157,8 @@ export function DetailsTab({ contract, settings, totals, ghlContactUrl }: Props)
                     <Badge
                       className={cn(
                         contract.billing.depositPaid
-                          ? "bg-emerald-600"
-                          : "bg-foreground/80"
+                          ? "bg-(--success) text-white"
+                          : "bg-(--status-lost) text-white"
                       )}
                     >
                       {contract.billing.depositPaid ? "Paid" : "Unpaid"}

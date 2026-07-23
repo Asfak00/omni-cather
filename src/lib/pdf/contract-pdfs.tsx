@@ -17,9 +17,14 @@ import { computeTotals, currency, formatTime, lineItemTotal } from "@/lib/calcul
 
 /* ---------------- styles ---------------- */
 
-const BRAND = "#1f6f5c";
+/** brand color comes from the app theme (primary color) */
+let BRAND = "#1f6f5c";
 
-const s = StyleSheet.create({
+const styleCache = new Map<string, ReturnType<typeof makeStyles>>();
+
+function makeStyles(brand: string) {
+  const BRAND = brand;
+  return StyleSheet.create({
   page: {
     fontFamily: "Helvetica",
     fontSize: 10,
@@ -118,7 +123,11 @@ const s = StyleSheet.create({
     borderTopColor: "#ccc",
     paddingTop: 6,
   },
-});
+  });
+}
+
+// active style sheet — swapped per brand color in buildContractPdf
+let s = makeStyles(BRAND);
 
 /* ---------------- shared pieces ---------------- */
 
@@ -631,8 +640,16 @@ function ProposalDoc({ ctx }: { ctx: Ctx }) {
 export function buildContractPdf(
   slug: string,
   contract: Contract,
-  settings: RestaurantSettings
+  settings: RestaurantSettings,
+  brandColor?: string
 ): React.ReactElement<React.ComponentProps<typeof Document>> | null {
+  // PDFs follow the app theme — no hardcoded brand color
+  if (brandColor && brandColor !== BRAND) {
+    BRAND = brandColor;
+  }
+  if (!styleCache.has(BRAND)) styleCache.set(BRAND, makeStyles(BRAND));
+  s = styleCache.get(BRAND)!;
+
   const ctx = { contract, settings };
   switch (slug) {
     case "kitchen-sheet":

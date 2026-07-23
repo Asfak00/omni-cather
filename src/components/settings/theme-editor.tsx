@@ -6,6 +6,7 @@ import { Loader2, RotateCcw, Save } from "lucide-react";
 import type { ThemeSettings } from "@/types";
 import { useThemeSettings } from "@/components/theme/theme-provider";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/contract/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -146,6 +147,73 @@ export function ThemeEditor() {
 
           <Card>
             <CardHeader>
+              <CardTitle>Semantic Colors</CardTitle>
+              <CardDescription>
+                Paid/signed states, errors, warnings and info notices.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <ColorField
+                label="Success (Paid, Signed)"
+                value={theme.successColor}
+                onChange={(v) => update({ successColor: v })}
+              />
+              <ColorField
+                label="Danger (Not Paid, Delete)"
+                value={theme.dangerColor}
+                onChange={(v) => update({ dangerColor: v })}
+              />
+              <ColorField
+                label="Warning (New, Notices)"
+                value={theme.warningColor}
+                onChange={(v) => update({ warningColor: v })}
+              />
+              <ColorField
+                label="Info"
+                value={theme.infoColor}
+                onChange={(v) => update({ infoColor: v })}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Event Status Colors</CardTitle>
+              <CardDescription>
+                Badges and chips for each event status.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <ColorField
+                label="Prospect"
+                value={theme.statusProspect}
+                onChange={(v) => update({ statusProspect: v })}
+              />
+              <ColorField
+                label="Tentative"
+                value={theme.statusTentative}
+                onChange={(v) => update({ statusTentative: v })}
+              />
+              <ColorField
+                label="Definite"
+                value={theme.statusDefinite}
+                onChange={(v) => update({ statusDefinite: v })}
+              />
+              <ColorField
+                label="Closed"
+                value={theme.statusClosed}
+                onChange={(v) => update({ statusClosed: v })}
+              />
+              <ColorField
+                label="Lost"
+                value={theme.statusLost}
+                onChange={(v) => update({ statusLost: v })}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>Fonts</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -269,6 +337,19 @@ export function ThemeEditor() {
                 <Badge>Badge</Badge>
                 <Badge variant="secondary">Secondary</Badge>
                 <Badge variant="outline">Outline</Badge>
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {(["PROSPECT", "TENTATIVE", "DEFINITE", "CLOSED", "LOST"] as const).map(
+                  (s) => (
+                    <StatusBadge key={s} status={s} />
+                  )
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                <Badge className="bg-(--success) text-white">Paid</Badge>
+                <Badge className="bg-(--danger) text-white">Not Paid</Badge>
+                <Badge className="bg-(--warning) text-white">New</Badge>
+                <Badge className="bg-(--info)/15 text-(--info)">Info</Badge>
               </div>
             </div>
           </CardContent>

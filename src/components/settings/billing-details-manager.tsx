@@ -110,7 +110,7 @@ export function BillingDetailsManager({ settings, onChange }: Props) {
                 A dollar amount or a percentage - e.g., &quot;15.5%&quot; or
                 &quot;500&quot;.
               </Hint>
-              <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
+              <div className="mt-2 flex items-start gap-2 rounded-md border border-(--warning)/40 bg-(--warning)/10 px-3 py-2.5 text-sm text-(--warning)">
                 <AlertCircle className="mt-0.5 size-4 shrink-0" />
                 <span>
                   Be sure to include a % sign for all values that are
@@ -178,7 +178,7 @@ export function BillingDetailsManager({ settings, onChange }: Props) {
             <h3 className="mb-3 font-semibold">
               Default Associated Billing Details
             </h3>
-            <div className="rounded-md border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+            <div className="rounded-md border border-(--info)/30 bg-(--info)/10 px-4 py-3 text-sm text-(--info)">
               The following billing details will be selected by default when
               this Billing Detail is used. This is only useful if this Billing
               Detail is a percentage based fee. It enables the total from

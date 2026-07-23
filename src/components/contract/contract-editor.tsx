@@ -250,7 +250,7 @@ export function ContractEditor({ initialContract, settings, ghlContactUrl }: Pro
       </Card>
 
       {/* sticky action bar */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-card/95 backdrop-blur md:left-64">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-card/95 backdrop-blur">
         <div className="flex items-center justify-between gap-3 px-6 py-3">
           <p className="text-sm text-muted-foreground">
             {dirty ? "Unsaved changes" : "All changes saved"}

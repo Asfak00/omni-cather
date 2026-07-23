@@ -52,12 +52,12 @@ export function DocsTab({ contract, totals, ghlLinks, onDeleted }: Props) {
   const router = useRouter();
 
   function share(doc: EventDocument) {
-    toast.info(`Opening Omni Cather share page for “${doc.name}”...`);
+    toast.info(`Opening OmniCather share page for “${doc.name}”...`);
     window.open(ghlLinks.documents, "_blank", "noopener");
   }
 
   function email(doc: EventDocument) {
-    toast.info(`Opening Omni Cather email composer for “${doc.name}”...`);
+    toast.info(`Opening OmniCather email composer for “${doc.name}”...`);
     window.open(ghlLinks.conversations, "_blank", "noopener");
   }
 
@@ -178,13 +178,13 @@ export function DocsTab({ contract, totals, ghlLinks, onDeleted }: Props) {
                     {doc.status === "not_signed" && (
                       <Badge
                         variant="outline"
-                        className="border-red-300 text-[10px] text-red-600"
+                        className="border-(--danger)/40 text-[10px] text-(--danger)"
                       >
                         ✎ Not Signed
                       </Badge>
                     )}
                     {doc.status === "signed" && (
-                      <Badge className="bg-emerald-600 text-[10px]">Signed</Badge>
+                      <Badge className="bg-(--success) text-[10px] text-white">Signed</Badge>
                     )}
                   </div>
                   <p className="ml-6 mt-0.5 text-xs text-muted-foreground">
@@ -221,17 +221,17 @@ export function DocsTab({ contract, totals, ghlLinks, onDeleted }: Props) {
                         <Download className="size-4" /> Download PDF
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => email(doc)}>
-                        <Mail className="size-4" /> Email via Omni Cather
+                        <Mail className="size-4" /> Email via OmniCather
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => share(doc)}>
-                        <Share2 className="size-4" /> Open Omni Cather share page
+                        <Share2 className="size-4" /> Open OmniCather share page
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         render={
                           <a href={ghlLinks.contact} target="_blank" rel="noopener" />
                         }
                       >
-                        <ExternalLink className="size-4" /> View contact in Omni Cather
+                        <ExternalLink className="size-4" /> View contact in OmniCather
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

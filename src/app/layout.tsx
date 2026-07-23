@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Event Manager | Omni Cather",
+  title: "Event Manager | OmniCather",
   description:
-    "Manage reservations, contracts, menus and documents with Omni Cather",
+    "Manage reservations, contracts, menus and documents with OmniCather",
 };
 
 // Theme + restaurant settings live in a mutable store; every page must
@@ -43,6 +43,16 @@ export default async function RootLayout({
     --foreground:${theme.foregroundColor};
     --card:${theme.cardColor};
     --card-foreground:${theme.foregroundColor};
+    --destructive:${theme.dangerColor};
+    --success:${theme.successColor};
+    --danger:${theme.dangerColor};
+    --warning:${theme.warningColor};
+    --info:${theme.infoColor};
+    --status-prospect:${theme.statusProspect};
+    --status-tentative:${theme.statusTentative};
+    --status-definite:${theme.statusDefinite};
+    --status-closed:${theme.statusClosed};
+    --status-lost:${theme.statusLost};
     --radius:${theme.radius}rem;
     --app-font-body:${theme.bodyFont};
     --app-font-heading:${theme.headingFont};

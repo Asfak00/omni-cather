@@ -126,7 +126,7 @@ export function PaymentsTab({ contract, totals, onPatch, ghlInvoicesUrl }: Props
     });
 
   function requestPayment() {
-    toast.info("Opening Omni Cather payment request (invoice) page...");
+    toast.info("Opening OmniCather payment request (invoice) page...");
     if (ghlInvoicesUrl) window.open(ghlInvoicesUrl, "_blank", "noopener");
   }
 
@@ -168,7 +168,7 @@ export function PaymentsTab({ contract, totals, onPatch, ghlInvoicesUrl }: Props
         {subTab === "cards" ? (
           <div className="py-10 text-center text-sm text-muted-foreground">
             <CreditCard className="mx-auto mb-2 size-6" />
-            No credit cards on file. Cards are collected through the Omni Cather
+            No credit cards on file. Cards are collected through the OmniCather
             payment forms linked from the Invoice document.
           </div>
         ) : (
@@ -262,8 +262,8 @@ export function PaymentsTab({ contract, totals, onPatch, ghlInvoicesUrl }: Props
                   <Badge
                     className={cn(
                       contract.billing.depositPaid
-                        ? "bg-emerald-600"
-                        : "bg-amber-500"
+                        ? "bg-(--success) text-white"
+                        : "bg-(--warning) text-white"
                     )}
                   >
                     {contract.billing.depositPaid ? "Paid" : "New"}
@@ -346,7 +346,7 @@ export function PaymentsTab({ contract, totals, onPatch, ghlInvoicesUrl }: Props
                   <span>
                     <Badge
                       className={cn(
-                        p.status === "paid" ? "bg-emerald-600" : "bg-amber-500"
+                        p.status === "paid" ? "bg-(--success) text-white" : "bg-(--warning) text-white"
                       )}
                     >
                       {p.status === "paid" ? "Paid" : "New"}
