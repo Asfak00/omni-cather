@@ -18,14 +18,14 @@ import { Badge } from "@/components/ui/badge";
 export const metadata = { title: "Make Contract | Event Manager" };
 
 /**
- * Entry point opened FROM GoHighLevel.
+ * Entry point opened FROM Omni Cather.
  *
- * Contacts live in GHL's own contact list — a "Make Contract" custom
- * link there opens this page with the contact id. We create (or reuse)
- * a draft contract for that contact and drop the user straight into
- * the contract editor.
+ * Contacts live in the Omni Cather contact list — a "Make Contract"
+ * custom link there opens this page with the contact id. We create
+ * (or reuse) a draft contract for that contact and drop the user
+ * straight into the contract editor.
  *
- *   /make-contract?contactId=<GHL contact id>
+ *   /make-contract?contactId=<contact id>
  */
 export default async function MakeContractPage({
   searchParams,
@@ -38,7 +38,7 @@ export default async function MakeContractPage({
     const contact = await getContact(contactId);
 
     if (contact) {
-      // Reuse an open draft for this contact so the GHL button is idempotent
+      // Reuse an open draft for this contact so the button is idempotent
       const existing = (await listContracts()).find(
         (c) => c.contactId === contactId && c.status === "PROSPECT"
       );
@@ -52,8 +52,8 @@ export default async function MakeContractPage({
     }
   }
 
-  // No (valid) contactId → show how to hook this page up inside GHL
-  const ghl = ghlAppLinks();
+  // No (valid) contactId → show how to hook this page up in Omni Cather
+  const links = ghlAppLinks();
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 py-10">
@@ -61,8 +61,8 @@ export default async function MakeContractPage({
         <h1>Make Contract</h1>
         <p className="text-muted-foreground">
           {contactId
-            ? `Contact “${contactId}” was not found in GHL — check the link and try again.`
-            : "This page is opened from GoHighLevel with a contact attached."}
+            ? `Contact “${contactId}” was not found — check the link and try again.`
+            : "This page is opened from Omni Cather with a contact attached."}
         </p>
       </div>
 
@@ -76,24 +76,24 @@ export default async function MakeContractPage({
         <CardHeader>
           <CardTitle>How it works</CardTitle>
           <CardDescription>
-            Contacts stay in GHL — this app only takes over from “Make
+            Contacts stay in Omni Cather — this app takes over from “Make
             Contract” onwards.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
           <ol className="list-decimal space-y-3 pl-5">
             <li>
-              A reservation form submission creates a contact in your GHL
-              sub-account, as usual.
+              A reservation form submission creates a contact in your Omni
+              Cather sub-account, as usual.
             </li>
             <li>
-              In GHL, add a <strong>“Make Contract”</strong> link for contacts
-              (Custom Menu Link, workflow SMS/email button, or a custom field
-              button) pointing to:
+              In Omni Cather, add a <strong>“Make Contract”</strong> link for
+              contacts (Custom Menu Link, workflow SMS/email button, or a
+              custom field button) pointing to:
               <code className="mt-2 block rounded-md bg-muted px-3 py-2 font-mono text-xs">
                 {"https://<your-app-domain>/make-contract?contactId={{contact.id}}"}
               </code>
-              GHL replaces{" "}
+              Omni Cather replaces{" "}
               <code className="rounded bg-muted px-1">{"{{contact.id}}"}</code>{" "}
               with the real contact id when the link is clicked.
             </li>
@@ -104,18 +104,18 @@ export default async function MakeContractPage({
             </li>
             <li>
               Finish the contract (menus, taxes, billing), then share the
-              generated documents back through GHL.
+              generated documents back through Omni Cather.
             </li>
           </ol>
 
           <div className="flex flex-wrap gap-3 border-t pt-4">
             <a
-              href={ghl.contact}
+              href={links.contact}
               target="_blank"
               rel="noopener"
               className="inline-flex items-center gap-1.5 text-primary underline"
             >
-              <ExternalLink className="size-4" /> Open GHL contacts
+              <ExternalLink className="size-4" /> Open Omni Cather contacts
             </a>
             <Link
               href="/events"

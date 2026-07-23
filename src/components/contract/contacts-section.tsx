@@ -112,7 +112,7 @@ export function ContactsSection({ contract, onChange }: Props) {
               <DialogTitle>Add a contact</DialogTitle>
             </DialogHeader>
             <Input
-              placeholder="Search GHL contacts..."
+              placeholder="Search contacts..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               autoFocus

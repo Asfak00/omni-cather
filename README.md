@@ -1,18 +1,18 @@
-# GHL Event Manager
+# Event Manager (Omni Cather)
 
-A custom event / contract management app built on top of **GoHighLevel** for
-restaurants and venues. Contacts arrive from your GHL reservation form, get
+A custom event / contract management app built on top of **Omni Cather** for
+restaurants and venues. Contacts arrive from your Omni Cather reservation form, get
 converted into fully-priced event contracts (menus, taxes, gratuity, deposits),
 and produce a document set (BEO, Contract, Invoice, Kitchen Sheet, Menu,
-Proposal) that shares out through GHL.
+Proposal) that shares out through Omni Cather.
 
 ## The flow
 
 ```
-GHL reservation form
-      │  (lead lands in GHL contacts — contacts stay in GHL)
+Omni Cather reservation form
+      │  (lead lands in Omni Cather contacts — contacts stay there)
       ▼
-GHL contact ──"Make Contract" link──▶  /make-contract?contactId={{contact.id}}
+Omni Cather contact ──"Make Contract" link──▶  /make-contract?contactId={{contact.id}}
                                         │  (draft auto-created)
                                         ▼
                                      Contract editor
@@ -29,32 +29,32 @@ GHL contact ──"Make Contract" link──▶  /make-contract?contactId={{cont
                               Invoice, Kitchen Sheet, Menu, Proposal)
                                         │  Share / Email / Link
                                         ▼
-                              GHL share & email pages
+                              Omni Cather share & email pages
 ```
 
 ## Stack
 
 - **Next.js 16** (App Router) · **TypeScript** · **Tailwind CSS v4**
 - **shadcn/ui** component library
-- Server-side GHL v2 API client (`src/lib/ghl/`)
+- Server-side Omni Cather API client (`src/lib/ghl/`)
 - JSON file persistence (`data/`) behind a one-file storage interface
-  (`src/lib/store/file-store.ts`) — swap for GHL custom objects or a DB
+  (`src/lib/store/file-store.ts`) — swap for Omni Cather custom objects or a DB
   without touching UI code
 
 ## Getting started
 
 ```bash
 npm install
-cp .env.example .env.local   # add your GHL credentials
+cp .env.example .env.local   # add your Omni Cather credentials
 npm run dev
 ```
 
 Without credentials the app runs in **demo mode** with mock contacts, so the
 whole flow is testable immediately.
 
-### GHL credentials
+### Omni Cather credentials
 
-1. In your GHL sub-account: **Settings → Private Integrations → New**
+1. In your Omni Cather sub-account: **Settings → Private Integrations → New**
 2. Grant `contacts.readonly`, `contacts.write`, `invoices.readonly`, `invoices.write`
 3. Put the `pit-...` token in `GHL_API_KEY` and your location id in `GHL_LOCATION_ID`
 
@@ -62,7 +62,7 @@ whole flow is testable immediately.
 
 | Route | What it does |
 |---|---|
-| `/make-contract?contactId=...` | Entry point opened from GHL — auto-creates a draft event + contract for that contact (without a contactId it shows GHL setup instructions) |
+| `/make-contract?contactId=...` | Entry point opened from Omni Cather — auto-creates a draft event + contract for that contact (without a contactId it shows setup instructions) |
 | `/events` | Events list grouped Today / Next 7 Days / Beyond, with search + Upcoming/All filter |
 | `/events/[id]` | Event view with tabs: Details, Docs, Discussion, Payments, Tasks, Notes, Log |
 | `/events/[id]/edit` | Event editor (dates via shadcn calendar, guests, managers, lead sources, financial summary, custom fields) |
@@ -97,9 +97,9 @@ reset between cold starts. For durable production data either:
 - set `DATA_DIR` to a mounted persistent disk (self-hosted / Render /
   Railway volumes), or
 - deploy with `npm run build && npm run start` on any Node host, or
-- keep Netlify for the UI and rely on GHL as the source of truth
-  (settings already mirror to a GHL Custom Value; contacts, messages and
-  notes sync live).
+- keep Netlify for the UI and rely on Omni Cather as the source of truth
+  (settings already mirror to an Omni Cather custom value; contacts,
+  messages and notes sync live).
 
 ## Folder structure
 
@@ -111,7 +111,7 @@ src/
 │   │   ├── contracts/[id]/(docs)/
 │   │   └── settings/(restaurant|theme)/
 │   └── api/                # route handlers
-│       ├── ghl/contacts/   # proxied GHL contact list
+│       ├── ghl/contacts/   # proxied contact list
 │       ├── contracts/      # contract CRUD
 │       └── settings/       # restaurant + theme settings
 ├── components/
@@ -123,9 +123,9 @@ src/
 │   ├── theme/              # ThemeProvider (CSS variable injection)
 │   └── ui/                 # shadcn components
 ├── lib/
-│   ├── ghl/                # GHL API client + contact normalization
+│   ├── ghl/                # Omni Cather API client + contact normalization
 │   ├── store/              # persistence layer + seed defaults
 │   ├── calculations.ts     # totals, taxes, deposit math
-│   └── contract-factory.ts # new contract from a GHL contact
+│   └── contract-factory.ts # new contract from a contact
 └── types/                  # shared domain types
 ```

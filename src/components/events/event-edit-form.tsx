@@ -36,7 +36,7 @@ const STATUSES: { value: EventStatus; color: string }[] = [
 
 const LEAD_SOURCE_OPTIONS = [
   "Reservation Form",
-  "GHL Web Lead",
+  "Omni Cather Web Lead",
   "Referral",
   "Walk-in",
   "Facebook",

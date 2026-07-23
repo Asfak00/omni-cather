@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CalendarDays,
-  FilePlus2,
   Settings2,
   Palette,
   UtensilsCrossed,
@@ -15,10 +14,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   {
     label: "Workspace",
-    items: [
-      { href: "/events", label: "Events", icon: CalendarDays },
-      { href: "/make-contract", label: "Make Contract (from GHL)", icon: FilePlus2 },
-    ],
+    items: [{ href: "/events", label: "Events", icon: CalendarDays }],
   },
   {
     label: "Settings",
@@ -49,7 +45,7 @@ export function Sidebar() {
         </div>
         <div className="leading-tight">
           <p className="text-sm font-semibold">Event Manager</p>
-          <p className="text-xs text-white/60">GoHighLevel</p>
+          <p className="text-xs text-white/60">Omni Cather</p>
         </div>
       </div>
 
@@ -88,7 +84,7 @@ export function Sidebar() {
       <div className="border-t border-white/10 p-4">
         <div className="flex items-center gap-2 text-xs text-white/50">
           <Settings2 className="size-3.5" />
-          <span>Synced with GHL sub-account</span>
+          <span>Synced with Omni Cather</span>
         </div>
       </div>
     </aside>

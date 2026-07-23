@@ -14,7 +14,7 @@ export const MOCK_CONTACTS: GHLContact[] = [
     city: "New York",
     state: "NY",
     tags: ["lead", "reservation-form"],
-    source: "GHL Web Lead",
+    source: "Omni Cather Web Lead",
     dateAdded: "2026-07-20T10:34:00.000Z",
     type: "lead",
   },

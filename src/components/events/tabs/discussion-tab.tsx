@@ -259,8 +259,8 @@ function ThreadView({
     } else if (channel === "guest") {
       toast.success(
         relayed
-          ? "Message sent via GHL conversation"
-          : "Message saved — will relay via GHL once credentials are connected"
+          ? "Message sent via Omni Cather conversation"
+          : "Message saved — will relay via Omni Cather once credentials are connected"
       );
     } else {
       toast.success("Staff message posted");
@@ -400,7 +400,7 @@ function ThreadView({
             <Button variant="outline" size="sm" onClick={() => toast.info("Attach files from the event's Attached Files panel")}>
               <Paperclip className="size-3.5" /> Attachments
             </Button>
-            <Button variant="outline" size="sm" onClick={() => toast.info("File library coming from GHL media storage")}>
+            <Button variant="outline" size="sm" onClick={() => toast.info("File library coming from Omni Cather media storage")}>
               <Folder className="size-3.5" /> File Library
             </Button>
             <DropdownMenu>

@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Event Manager | GHL",
+  title: "Event Manager | Omni Cather",
   description:
-    "Manage reservations, contracts, menus and documents on top of GoHighLevel",
+    "Manage reservations, contracts, menus and documents with Omni Cather",
 };
 
 // Theme + restaurant settings live in a mutable store; every page must

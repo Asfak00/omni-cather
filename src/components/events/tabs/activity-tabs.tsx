@@ -242,9 +242,9 @@ export function LogTab({
       })),
     ...(ghlNotes ?? []).map((n) => ({
       at: n.dateAdded,
-      kind: "GHL",
-      text: `GHL contact note: ${n.body.replace(/<[^>]+>/g, " ").slice(0, 160)}`,
-      by: "GHL",
+      kind: "OMNI",
+      text: `Omni Cather contact note: ${n.body.replace(/<[^>]+>/g, " ").slice(0, 160)}`,
+      by: "Omni Cather",
     })),
   ].sort((a, b) => (a.at < b.at ? 1 : -1));
 
@@ -257,7 +257,7 @@ export function LogTab({
               <Badge
                 className={cn(
                   "mt-0.5 w-14 justify-center bg-teal-100 text-[9px] font-bold text-teal-800",
-                  entry.kind === "GHL" && "bg-indigo-100 text-indigo-800"
+                  entry.kind === "OMNI" && "bg-indigo-100 text-indigo-800"
                 )}
               >
                 {entry.kind}
