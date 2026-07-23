@@ -269,9 +269,9 @@ function ItemsTable({
         <View key={item.id} style={s.tableRow}>
           <Text style={s.colQty}>{item.qty || "—"}</Text>
           <View style={s.colDesc}>
-            <Text>{item.description || "Untitled item"}</Text>
+            <Text>{htmlToText(item.description) || "Untitled item"}</Text>
             {showNotes && item.altDescription ? (
-              <Text style={s.note}>{item.altDescription}</Text>
+              <Text style={s.note}>{htmlToText(item.altDescription)}</Text>
             ) : null}
             {showPrices && item.discount?.value ? (
               <Text style={s.note}>
@@ -567,11 +567,11 @@ function MenuDoc({ ctx }: { ctx: Ctx }) {
               {sec.items.map((item) => (
                 <View key={item.id} style={{ marginBottom: 6, alignItems: "center" }}>
                   <Text style={{ fontFamily: "Helvetica-Bold" }}>
-                    {item.description}
+                    {htmlToText(item.description)}
                   </Text>
                   {item.altDescription ? (
                     <Text style={[s.note, { textAlign: "center" }]}>
-                      {item.altDescription}
+                      {htmlToText(item.altDescription)}
                     </Text>
                   ) : null}
                 </View>

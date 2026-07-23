@@ -64,9 +64,33 @@ export function BillingWidget({ contract, totals, onChange }: Props) {
   const [openSettings, setOpenSettings] = React.useState<ApplicableCharge | null>(
     null
   );
+  const [dragKey, setDragKey] = React.useState<string | null>(null);
+  const [dragOverKey, setDragOverKey] = React.useState<string | null>(null);
 
   const patchBilling = (patch: Partial<BillingSettings>) =>
     onChange({ billing: { ...billing, ...patch } });
+
+  /** ordered charge-row keys: builtin names + custom charge ids */
+  const chargeRowKeys = React.useMemo(() => {
+    const known = new Set<string>([
+      ...CHARGES,
+      ...(billing.customCharges ?? []).map((c) => c.id),
+    ]);
+    const saved = (billing.chargeOrder ?? []).filter((k) => known.has(k));
+    for (const k of known) if (!saved.includes(k)) saved.push(k);
+    return saved;
+  }, [billing.chargeOrder, billing.customCharges]);
+
+  const reorderCharges = (targetKey: string) => {
+    if (!dragKey || dragKey === targetKey) return;
+    const order = [...chargeRowKeys];
+    const from = order.indexOf(dragKey);
+    const to = order.indexOf(targetKey);
+    if (from === -1 || to === -1) return;
+    order.splice(from, 1);
+    order.splice(to, 0, dragKey);
+    patchBilling({ chargeOrder: order });
+  };
 
   const settingsFor = (charge: ApplicableCharge): ChargeSettings =>
     billing.chargeSettings?.[charge] ?? {
@@ -162,170 +186,209 @@ export function BillingWidget({ contract, totals, onChange }: Props) {
               <span />
             </Row>
 
-            {/* built-in charges with "..." advanced settings */}
-            {CHARGES.map((charge) => {
-              const cs = settingsFor(charge);
-              const rate = billing[RATE_KEYS[charge]] as number;
-              const isOpen = openSettings === charge;
+            {/* charge rows — drag the grip to reorder */}
+            {chargeRowKeys.map((key) => {
+              const isBuiltin = (CHARGES as string[]).includes(key);
+              const custom = (billing.customCharges ?? []).find(
+                (c) => c.id === key
+              );
+              if (!isBuiltin && !custom) return null;
+
+              const dragProps = {
+                isDragging: dragKey === key,
+                isOver: dragOverKey === key && dragKey !== key,
+                onDragStart: () => setDragKey(key),
+                onDragEnd: () => {
+                  setDragKey(null);
+                  setDragOverKey(null);
+                },
+                onDragOver: (e: React.DragEvent) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  setDragOverKey(key);
+                },
+                onDrop: () => {
+                  reorderCharges(key);
+                  setDragKey(null);
+                  setDragOverKey(null);
+                },
+              };
+
+              if (isBuiltin) {
+                const charge = key as ApplicableCharge;
+                const cs = settingsFor(charge);
+                const rate = billing[RATE_KEYS[charge]] as number;
+                const isOpen = openSettings === charge;
+                return (
+                  <DraggableRow key={key} {...dragProps}>
+                    {(grip) => (
+                      <>
+                        <Row>
+                          {grip}
+                          <span className="text-sm">{charge}</span>
+                          <PercentInput
+                            value={rate}
+                            onChange={(v) =>
+                              patchBilling({ [RATE_KEYS[charge]]: v } as Partial<BillingSettings>)
+                            }
+                          />
+                          <span
+                            className={cn(
+                              "text-sm",
+                              cs.excludeFromTotals &&
+                                "text-muted-foreground line-through"
+                            )}
+                          >
+                            {currency(chargeTotal(charge))}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon-xs"
+                              onClick={() =>
+                                setOpenSettings(isOpen ? null : charge)
+                              }
+                              title="Charge settings"
+                            >
+                              <MoreHorizontal className="size-3.5" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-xs"
+                              className="text-destructive"
+                              title="Remove (set to 0%)"
+                              onClick={() =>
+                                patchBilling({ [RATE_KEYS[charge]]: 0 } as Partial<BillingSettings>)
+                              }
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </span>
+                        </Row>
+
+                        {isOpen && (
+                          <div className="bg-muted/40 px-8 py-4">
+                            <div className="grid gap-6 sm:grid-cols-2">
+                              <div>
+                                <Label className="text-[11px] font-semibold uppercase text-muted-foreground">
+                                  Apply to billing detail
+                                </Label>
+                                <Select value={charge} onValueChange={() => {}}>
+                                  <SelectTrigger className="mt-1.5 w-44">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {CHARGES.map((c) => (
+                                      <SelectItem key={c} value={c}>
+                                        {c}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <label className="mt-3 flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+                                  <Checkbox
+                                    checked={cs.excludeFromTotals}
+                                    onCheckedChange={(v) =>
+                                      patchChargeSettings(charge, {
+                                        excludeFromTotals: v === true,
+                                      })
+                                    }
+                                  />
+                                  Exclude from totals
+                                </label>
+                              </div>
+                              <div>
+                                <Label className="text-[11px] font-semibold uppercase text-muted-foreground">
+                                  Include totals from
+                                </Label>
+                                <div className="mt-1.5 space-y-1.5">
+                                  {CHARGES.filter((c) => c !== charge).map(
+                                    (other) => (
+                                      <label
+                                        key={other}
+                                        className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground"
+                                      >
+                                        <Checkbox
+                                          checked={cs.includeFrom.includes(other)}
+                                          onCheckedChange={(v) =>
+                                            patchChargeSettings(charge, {
+                                              includeFrom:
+                                                v === true
+                                                  ? [...cs.includeFrom, other]
+                                                  : cs.includeFrom.filter(
+                                                      (x) => x !== other
+                                                    ),
+                                            })
+                                          }
+                                        />
+                                        {other}
+                                      </label>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </DraggableRow>
+                );
+              }
+
+              const total =
+                totals.customChargeTotals.find((c) => c.id === custom!.id)
+                  ?.total ?? 0;
               return (
-                <React.Fragment key={charge}>
-                  <Row>
-                    <Grip />
-                    <span className="text-sm">{charge}</span>
-                    <PercentInput
-                      value={rate}
-                      onChange={(v) =>
-                        patchBilling({ [RATE_KEYS[charge]]: v } as Partial<BillingSettings>)
-                      }
-                    />
-                    <span
-                      className={cn(
-                        "text-sm",
-                        cs.excludeFromTotals && "text-muted-foreground line-through"
-                      )}
-                    >
-                      {currency(chargeTotal(charge))}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon-xs"
-                        onClick={() => setOpenSettings(isOpen ? null : charge)}
-                        title="Charge settings"
-                      >
-                        <MoreHorizontal className="size-3.5" />
-                      </Button>
+                <DraggableRow key={key} {...dragProps}>
+                  {(grip) => (
+                    <Row>
+                      {grip}
+                      <Input
+                        className="h-9 max-w-md"
+                        value={custom!.label}
+                        onChange={(e) =>
+                          patchCustom(custom!.id, { label: e.target.value })
+                        }
+                      />
+                      <span className="relative">
+                        <Input
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          className="h-9 pr-7"
+                          value={custom!.value || ""}
+                          onChange={(e) =>
+                            patchCustom(custom!.id, {
+                              value: Number(e.target.value) || 0,
+                            })
+                          }
+                        />
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                          {custom!.mode === "percent" ? "%" : "$"}
+                        </span>
+                      </span>
+                      <span className="text-sm">{currency(total)}</span>
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon-xs"
                         className="text-destructive"
-                        title="Remove (set to 0%)"
                         onClick={() =>
-                          patchBilling({ [RATE_KEYS[charge]]: 0 } as Partial<BillingSettings>)
+                          patchBilling({
+                            customCharges: (billing.customCharges ?? []).filter(
+                              (c) => c.id !== custom!.id
+                            ),
+                          })
                         }
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
-                    </span>
-                  </Row>
-
-                  {isOpen && (
-                    <div className="bg-muted/40 px-8 py-4">
-                      <div className="grid gap-6 sm:grid-cols-2">
-                        <div>
-                          <Label className="text-[11px] font-semibold uppercase text-muted-foreground">
-                            Apply to billing detail
-                          </Label>
-                          <Select value={charge} onValueChange={() => {}}>
-                            <SelectTrigger className="mt-1.5 w-44">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {CHARGES.map((c) => (
-                                <SelectItem key={c} value={c}>
-                                  {c}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <label className="mt-3 flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
-                            <Checkbox
-                              checked={cs.excludeFromTotals}
-                              onCheckedChange={(v) =>
-                                patchChargeSettings(charge, {
-                                  excludeFromTotals: v === true,
-                                })
-                              }
-                            />
-                            Exclude from totals
-                          </label>
-                        </div>
-                        <div>
-                          <Label className="text-[11px] font-semibold uppercase text-muted-foreground">
-                            Include totals from
-                          </Label>
-                          <div className="mt-1.5 space-y-1.5">
-                            {CHARGES.filter((c) => c !== charge).map((other) => (
-                              <label
-                                key={other}
-                                className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground"
-                              >
-                                <Checkbox
-                                  checked={cs.includeFrom.includes(other)}
-                                  onCheckedChange={(v) =>
-                                    patchChargeSettings(charge, {
-                                      includeFrom:
-                                        v === true
-                                          ? [...cs.includeFrom, other]
-                                          : cs.includeFrom.filter(
-                                              (x) => x !== other
-                                            ),
-                                    })
-                                  }
-                                />
-                                {other}
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    </Row>
                   )}
-                </React.Fragment>
-              );
-            })}
-
-            {/* custom charges */}
-            {(billing.customCharges ?? []).map((custom) => {
-              const total =
-                totals.customChargeTotals.find((c) => c.id === custom.id)?.total ??
-                0;
-              return (
-                <Row key={custom.id}>
-                  <Grip />
-                  <Input
-                    className="h-9 max-w-md"
-                    value={custom.label}
-                    onChange={(e) =>
-                      patchCustom(custom.id, { label: e.target.value })
-                    }
-                  />
-                  <span className="relative">
-                    <Input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      className="h-9 pr-7"
-                      value={custom.value || ""}
-                      onChange={(e) =>
-                        patchCustom(custom.id, {
-                          value: Number(e.target.value) || 0,
-                        })
-                      }
-                    />
-                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                      {custom.mode === "percent" ? "%" : "$"}
-                    </span>
-                  </span>
-                  <span className="text-sm">{currency(total)}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    className="text-destructive"
-                    onClick={() =>
-                      patchBilling({
-                        customCharges: (billing.customCharges ?? []).filter(
-                          (c) => c.id !== custom.id
-                        ),
-                      })
-                    }
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </Row>
+                </DraggableRow>
               );
             })}
 
@@ -557,6 +620,63 @@ function Row({
 
 function Grip() {
   return <GripVertical className="size-4 text-muted-foreground/50" />;
+}
+
+/** Row wrapper whose grip handle enables HTML5 drag & drop reordering */
+function DraggableRow({
+  isDragging,
+  isOver,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
+  children,
+}: {
+  isDragging: boolean;
+  isOver: boolean;
+  onDragStart: () => void;
+  onDragEnd: () => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDrop: () => void;
+  children: (grip: React.ReactNode) => React.ReactNode;
+}) {
+  const [armed, setArmed] = React.useState(false);
+  const grip = (
+    <button
+      type="button"
+      title="Drag to reorder"
+      className="cursor-grab text-muted-foreground/50 active:cursor-grabbing"
+      onMouseDown={() => setArmed(true)}
+      onMouseUp={() => setArmed(false)}
+    >
+      <GripVertical className="size-4" />
+    </button>
+  );
+  return (
+    <div
+      draggable={armed}
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        onDragStart();
+      }}
+      onDragEnd={() => {
+        setArmed(false);
+        onDragEnd();
+      }}
+      onDragOver={onDragOver}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDrop();
+      }}
+      className={cn(
+        "transition-opacity",
+        isDragging && "opacity-40",
+        isOver && "rounded-md ring-2 ring-primary/30"
+      )}
+    >
+      {children(grip)}
+    </div>
+  );
 }
 
 function PercentInput({

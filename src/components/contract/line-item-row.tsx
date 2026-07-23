@@ -10,6 +10,7 @@ import type {
 import { currency, lineItemTotal } from "@/lib/calculations";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -110,10 +111,12 @@ export function LineItemRow({
         </div>
 
         <div className="min-w-0 flex-1">
-          <Input
+          {/* looks like an input; focusing reveals the rich-text toolbar */}
+          <RichTextEditor
+            inline
             placeholder="Description"
             value={item.description}
-            onChange={(e) => onChange({ description: e.target.value })}
+            onChange={(description) => onChange({ description })}
           />
           {missingCategory && (
             <div className="mt-1 rounded-sm bg-red-400/90 px-2 py-0.5 text-center text-[11px] font-medium text-white">

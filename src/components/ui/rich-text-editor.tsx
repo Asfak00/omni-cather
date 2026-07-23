@@ -42,6 +42,11 @@ interface Props {
   placeholder?: string;
   /** rough visible height in text rows */
   rows?: number;
+  /**
+   * inline mode: looks like a plain input until focused — then the
+   * formatting toolbar appears (used for line item descriptions).
+   */
+  inline?: boolean;
   className?: string;
 }
 
@@ -50,10 +55,13 @@ export function RichTextEditor({
   onChange,
   placeholder,
   rows = 4,
+  inline = false,
   className,
 }: Props) {
   const ref = React.useRef<HTMLDivElement>(null);
   const lastHtml = React.useRef<string>("");
+  const [focused, setFocused] = React.useState(false);
+  const showToolbar = !inline || focused;
 
   // Sync external value → editor (without clobbering the caret while typing)
   React.useEffect(() => {
@@ -89,9 +97,21 @@ export function RichTextEditor({
         "rounded-lg border border-input bg-transparent transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
         className
       )}
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => {
+        // keep the toolbar open while focus stays inside the editor
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          setFocused(false);
+        }
+      }}
     >
       {/* toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 border-b px-2 py-1.5">
+      <div
+        className={cn(
+          "flex flex-wrap items-center gap-0.5 border-b px-2 py-1.5",
+          !showToolbar && "hidden"
+        )}
+      >
         <ToolbarButton title="Bold" onClick={() => exec("bold")}>
           <Bold className="size-4" />
         </ToolbarButton>
@@ -211,11 +231,12 @@ export function RichTextEditor({
         suppressContentEditableWarning
         data-placeholder={placeholder}
         className={cn(
-          "prose-sm w-full max-w-none px-3 py-2.5 text-sm outline-none",
+          "prose-sm w-full max-w-none px-3 text-sm outline-none",
+          inline ? "py-2" : "py-2.5",
           "[&_a]:text-primary [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5",
           "empty:before:pointer-events-none empty:before:text-muted-foreground empty:before:content-[attr(data-placeholder)]"
         )}
-        style={{ minHeight: `${rows * 1.6}rem` }}
+        style={{ minHeight: inline ? "2.5rem" : `${rows * 1.6}rem` }}
         onInput={emit}
         onBlur={emit}
       />

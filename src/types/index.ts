@@ -92,6 +92,8 @@ export interface BillingSettings {
   transferFinancialsToEvent: boolean;
   customCharges?: CustomCharge[];
   chargeSettings?: Partial<Record<ApplicableCharge, ChargeSettings>>;
+  /** display order of the charge rows (builtin names + custom ids) */
+  chargeOrder?: string[];
 }
 
 export interface ContractTotals {
