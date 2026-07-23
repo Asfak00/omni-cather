@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { cn } from "@/lib/utils";
 
 const CHARGES: ApplicableCharge[] = ["Sales Tax", "Gratuity", "Admin Fee"];
@@ -116,11 +116,11 @@ export function BillingWidget({ contract, totals, onChange }: Props) {
           <CardTitle className="text-primary">Billing Notes</CardTitle>
         </CardHeader>
         <CardContent>
-          <Textarea
+          <RichTextEditor
             rows={3}
             placeholder="Notes visible on the invoice and contract..."
             value={contract.billingNotes}
-            onChange={(e) => onChange({ billingNotes: e.target.value })}
+            onChange={(v) => onChange({ billingNotes: v })}
           />
         </CardContent>
       </Card>

@@ -5,6 +5,7 @@ import { Building2 } from "lucide-react";
 import type { Contract, ContractTotals, RestaurantSettings } from "@/types";
 import { currency } from "@/lib/calculations";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ContactValue } from "@/components/shared/contact-value";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -23,9 +24,10 @@ interface Props {
   contract: Contract;
   settings: RestaurantSettings;
   totals: ContractTotals;
+  ghlContactUrl?: string;
 }
 
-export function DetailsTab({ contract, settings, totals }: Props) {
+export function DetailsTab({ contract, settings, totals, ghlContactUrl }: Props) {
   const c = contract.contactSnapshot;
   const owner = settings.owners.find((o) => o.id === contract.ownerId);
   const managers = (contract.managerIds ?? [])
@@ -48,8 +50,13 @@ export function DetailsTab({ contract, settings, totals }: Props) {
               label="Account"
               value={
                 c.companyName ? (
-                  <span className="flex items-center gap-1.5 text-primary">
-                    <Building2 className="size-4" /> {c.companyName}
+                  <span className="flex items-center gap-1.5">
+                    <Building2 className="size-4 text-primary" />
+                    <ContactValue
+                      type="link"
+                      value={c.companyName}
+                      href={ghlContactUrl}
+                    />
                   </span>
                 ) : (
                   "—"
@@ -66,16 +73,25 @@ export function DetailsTab({ contract, settings, totals }: Props) {
                     </AvatarFallback>
                   </Avatar>
                   <span className="leading-tight">
-                    <span className="block text-primary">{c.name}</span>
+                    <ContactValue
+                      type="link"
+                      value={c.name}
+                      href={ghlContactUrl}
+                      className="block"
+                    />
                     {c.phone && (
-                      <span className="block text-sm text-muted-foreground">
-                        {c.phone}
-                      </span>
+                      <ContactValue
+                        type="phone"
+                        value={c.phone}
+                        className="block text-sm text-muted-foreground hover:text-primary"
+                      />
                     )}
                     {c.email && (
-                      <span className="block text-sm text-primary underline">
-                        {c.email}
-                      </span>
+                      <ContactValue
+                        type="email"
+                        value={c.email}
+                        className="block text-sm underline"
+                      />
                     )}
                   </span>
                 </span>

@@ -2,7 +2,18 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Eye, FileText, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  ChevronDown,
+  CreditCard,
+  Eye,
+  EyeOff,
+  FileText,
+  Forward,
+  Pencil,
+  Settings,
+  Trash2,
+} from "lucide-react";
 import type { Contract, ContractTotals, PaymentRecord } from "@/types";
 import { currency } from "@/lib/calculations";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +26,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -33,20 +51,28 @@ function randomId() {
 
 const METHODS = ["Credit Card", "Cash", "Check", "Bank Transfer", "Other"];
 
+const GRID =
+  "grid grid-cols-[1.4fr_110px_90px_90px_90px_110px_100px_44px] items-center gap-2";
+
 interface Props {
   contract: Contract;
   totals: ContractTotals;
   onPatch: (patch: Partial<Contract>) => Promise<void>;
+  ghlInvoicesUrl?: string;
 }
 
-export function PaymentsTab({ contract, totals, onPatch }: Props) {
+export function PaymentsTab({ contract, totals, onPatch, ghlInvoicesUrl }: Props) {
   const [subTab, setSubTab] = React.useState<"payments" | "cards">("payments");
+  const [showDeleted, setShowDeleted] = React.useState(false);
+  const [editing, setEditing] = React.useState<PaymentRecord | null>(null);
   const [open, setOpen] = React.useState(false);
   const [amount, setAmount] = React.useState("");
   const [method, setMethod] = React.useState(METHODS[0]);
   const [date, setDate] = React.useState("");
 
-  const payments = contract.payments ?? [];
+  const allPayments = contract.payments ?? [];
+  const payments = allPayments.filter((p) => !p.deleted);
+  const deletedPayments = allPayments.filter((p) => p.deleted);
   const uncovered = Math.max(
     0,
     totals.remaining -
@@ -54,41 +80,61 @@ export function PaymentsTab({ contract, totals, onPatch }: Props) {
   );
 
   function openAdd(prefill?: number) {
+    setEditing(null);
     setAmount(prefill ? String(prefill) : "");
+    setMethod(METHODS[0]);
+    setDate("");
     setOpen(true);
   }
 
-  async function addPayment() {
-    const payment: PaymentRecord = {
-      id: randomId(),
-      label: "Payment",
-      amount: Number(amount) || 0,
-      method,
-      date: date || undefined,
-      status: "paid",
-    };
-    await onPatch({ payments: [...payments, payment] });
+  function openEdit(p: PaymentRecord) {
+    setEditing(p);
+    setAmount(String(p.amount));
+    setMethod(p.method ?? METHODS[0]);
+    setDate(p.date ?? "");
+    setOpen(true);
+  }
+
+  async function submitPayment() {
+    if (editing) {
+      await onPatch({
+        payments: allPayments.map((p) =>
+          p.id === editing.id
+            ? { ...p, amount: Number(amount) || 0, method, date: date || undefined }
+            : p
+        ),
+      });
+      toast.success("Payment updated");
+    } else {
+      const payment: PaymentRecord = {
+        id: randomId(),
+        label: "Payment",
+        amount: Number(amount) || 0,
+        method,
+        date: date || undefined,
+        status: "paid",
+      };
+      await onPatch({ payments: [...allPayments, payment] });
+      toast.success("Payment recorded");
+    }
     setOpen(false);
-    setDate("");
   }
 
-  async function removePayment(id: string) {
-    await onPatch({ payments: payments.filter((p) => p.id !== id) });
-  }
-
-  async function togglePaid(p: PaymentRecord) {
-    await onPatch({
-      payments: payments.map((x) =>
-        x.id === p.id ? { ...x, status: x.status === "paid" ? "new" : "paid" } : x
-      ),
+  const setPayment = (id: string, patch: Partial<PaymentRecord>) =>
+    onPatch({
+      payments: allPayments.map((p) => (p.id === id ? { ...p, ...patch } : p)),
     });
+
+  function requestPayment() {
+    toast.info("Opening GHL payment request (invoice) page...");
+    if (ghlInvoicesUrl) window.open(ghlInvoicesUrl, "_blank", "noopener");
   }
 
   return (
     <Card>
       <CardContent className="pt-6">
         {/* sub tabs */}
-        <div className="mb-4 flex rounded-lg border p-1 w-fit">
+        <div className="mb-4 flex w-fit rounded-lg border p-1">
           {(
             [
               { key: "payments", label: "Payments" },
@@ -108,7 +154,10 @@ export function PaymentsTab({ contract, totals, onPatch }: Props) {
             >
               {t.label}
               {"count" in t && (
-                <Badge variant="secondary" className="size-5 justify-center rounded-full p-0">
+                <Badge
+                  variant="secondary"
+                  className="size-5 justify-center rounded-full p-0"
+                >
                   {t.count}
                 </Badge>
               )}
@@ -117,23 +166,66 @@ export function PaymentsTab({ contract, totals, onPatch }: Props) {
         </div>
 
         {subTab === "cards" ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No credit cards on file. Cards are collected via the GHL payment
-            forms linked from the Invoice document.
-          </p>
+          <div className="py-10 text-center text-sm text-muted-foreground">
+            <CreditCard className="mx-auto mb-2 size-6" />
+            No credit cards on file. Cards are collected through the GHL
+            payment forms linked from the Invoice document.
+          </div>
         ) : (
           <div className="rounded-md border">
+            {/* order header */}
             <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-3">
               <FileText className="size-4 text-muted-foreground" />
               <span className="font-semibold">
                 Contract &amp; Event Order: {contract.orderNumber} —{" "}
                 {currency(totals.grandTotal)}
               </span>
-              <Eye className="size-4 text-muted-foreground" />
+              {contract.portalHidden ? (
+                <EyeOff className="size-4 text-muted-foreground" />
+              ) : (
+                <Eye className="size-4 text-muted-foreground" />
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant="outline" size="sm" className="ml-auto" />
+                  }
+                >
+                  <Settings className="size-3.5" />
+                  <ChevronDown className="size-3" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      onPatch({ portalHidden: !contract.portalHidden });
+                      toast.success(
+                        contract.portalHidden
+                          ? "Financials visible on Guest Portal"
+                          : "Financials hidden from Guest Portal"
+                      );
+                    }}
+                  >
+                    {contract.portalHidden ? (
+                      <>
+                        <Eye className="size-4" /> Show on Guest Portal
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="size-4" /> Hide from Guest Portal
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
-            <div className="px-4 py-2">
-              <div className="grid grid-cols-[1.5fr_100px_90px_90px_90px_110px_100px_40px] items-center gap-2 border-b py-2 text-[11px] font-semibold uppercase text-muted-foreground">
+            <div className="overflow-x-auto px-4 py-2">
+              <div
+                className={cn(
+                  GRID,
+                  "border-b py-2 text-[11px] font-semibold uppercase text-muted-foreground"
+                )}
+              >
                 <span />
                 <span className="text-right">Amount</span>
                 <span>Due</span>
@@ -145,7 +237,7 @@ export function PaymentsTab({ contract, totals, onPatch }: Props) {
               </div>
 
               {/* Grand total */}
-              <div className="grid grid-cols-[1.5fr_100px_90px_90px_90px_110px_100px_40px] items-center gap-2 border-b py-2.5 text-sm">
+              <div className={cn(GRID, "border-b py-2.5 text-sm")}>
                 <span className="font-bold">Grand Total</span>
                 <span className="text-right font-bold">
                   {currency(totals.grandTotal)}
@@ -153,8 +245,8 @@ export function PaymentsTab({ contract, totals, onPatch }: Props) {
                 <span /><span /><span /><span /><span /><span />
               </div>
 
-              {/* Deposit */}
-              <div className="grid grid-cols-[1.5fr_100px_90px_90px_90px_110px_100px_40px] items-center gap-2 border-b py-2.5 text-sm">
+              {/* Deposit row */}
+              <div className={cn(GRID, "border-b py-2.5 text-sm")}>
                 <span>Deposit amount</span>
                 <span className="text-right">{currency(totals.deposit)}</span>
                 <span className="text-xs text-muted-foreground">
@@ -169,73 +261,150 @@ export function PaymentsTab({ contract, totals, onPatch }: Props) {
                 <span>
                   <Badge
                     className={cn(
-                      "cursor-pointer",
                       contract.billing.depositPaid
                         ? "bg-emerald-600"
                         : "bg-amber-500"
                     )}
-                    onClick={() =>
-                      onPatch({
-                        billing: {
-                          ...contract.billing,
-                          depositPaid: !contract.billing.depositPaid,
-                        },
-                      })
-                    }
                   >
                     {contract.billing.depositPaid ? "Paid" : "New"}
                   </Badge>
                 </span>
                 <span />
-                <span className="text-xs text-muted-foreground">
-                  {contract.eventId}
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  {contract.eventId} <Eye className="size-3.5" />
                 </span>
-                <span />
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={<Button variant="outline" size="icon-xs" />}
+                  >
+                    <Settings className="size-3" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={requestPayment}>
+                      <Forward className="size-4" /> Request Payment
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        onPatch({
+                          billing: {
+                            ...contract.billing,
+                            depositPaid: !contract.billing.depositPaid,
+                          },
+                        })
+                      }
+                    >
+                      <CreditCard className="size-4" />{" "}
+                      {contract.billing.depositPaid ? "Mark Unpaid" : "Pay"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        toast.info(
+                          "Edit the deposit in the Contract's Billing Widget"
+                        )
+                      }
+                    >
+                      <Pencil className="size-4" /> Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() =>
+                        onPatch({
+                          billing: { ...contract.billing, depositPercent: 0 },
+                        })
+                      }
+                    >
+                      <Trash2 className="size-4" /> Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
-              {/* user payments */}
-              {payments.map((p) => (
+              {/* payment rows */}
+              {[...payments, ...(showDeleted ? deletedPayments : [])].map((p) => (
                 <div
                   key={p.id}
-                  className="grid grid-cols-[1.5fr_100px_90px_90px_90px_110px_100px_40px] items-center gap-2 border-b py-2.5 text-sm"
+                  className={cn(
+                    GRID,
+                    "border-b py-2.5 text-sm",
+                    p.deleted && "opacity-50"
+                  )}
                 >
-                  <span>{p.label}</span>
+                  <span>
+                    {p.label}
+                    {p.deleted && (
+                      <Badge variant="outline" className="ml-2 text-[9px]">
+                        deleted
+                      </Badge>
+                    )}
+                  </span>
                   <span className="text-right">{currency(p.amount)}</span>
                   <span />
                   <span className="text-xs text-muted-foreground">
-                    {p.date
-                      ? format(new Date(`${p.date}T00:00:00`), "M/d/yy")
-                      : ""}
+                    {p.date ? format(new Date(`${p.date}T00:00:00`), "M/d/yy") : ""}
                   </span>
                   <span>
                     <Badge
                       className={cn(
-                        "cursor-pointer",
                         p.status === "paid" ? "bg-emerald-600" : "bg-amber-500"
                       )}
-                      onClick={() => togglePaid(p)}
                     >
                       {p.status === "paid" ? "Paid" : "New"}
                     </Badge>
                   </span>
                   <span className="text-xs">{p.method}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {p.id.slice(-8)}
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    {p.id.slice(-8)} <Eye className="size-3.5" />
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-destructive"
-                    onClick={() => removePayment(p.id)}
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
+                  {!p.deleted ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={<Button variant="outline" size="icon-xs" />}
+                      >
+                        <Settings className="size-3" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={requestPayment}>
+                          <Forward className="size-4" /> Request Payment
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            setPayment(p.id, {
+                              status: p.status === "paid" ? "new" : "paid",
+                            })
+                          }
+                        >
+                          <CreditCard className="size-4" />{" "}
+                          {p.status === "paid" ? "Mark Unpaid" : "Pay"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openEdit(p)}>
+                          <Pencil className="size-4" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => setPayment(p.id, { deleted: true })}
+                        >
+                          <Trash2 className="size-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="icon-xs"
+                      title="Restore payment"
+                      onClick={() => setPayment(p.id, { deleted: false })}
+                    >
+                      <Forward className="size-3 rotate-180" />
+                    </Button>
+                  )}
                 </div>
               ))}
 
               {/* outstanding */}
-              <div className="grid grid-cols-[1.5fr_100px] items-center gap-2 py-2.5 text-sm">
-                <span className="italic font-semibold">Total Outstanding</span>
+              <div className="grid grid-cols-[1.4fr_110px] items-center gap-2 py-2.5 text-sm">
+                <span className="font-semibold italic">Total Outstanding</span>
                 <span className="text-right font-semibold">
                   {currency(totals.remaining)}
                 </span>
@@ -254,18 +423,33 @@ export function PaymentsTab({ contract, totals, onPatch }: Props) {
               </div>
             )}
 
-            <div className="px-4 pb-4">
+            <div className="flex items-center justify-between px-4 pb-4">
               <Button size="sm" variant="secondary" onClick={() => openAdd()}>
                 Add a Payment
               </Button>
+              <div className="text-right text-xs text-muted-foreground">
+                {deletedPayments.length > 0 && (
+                  <button
+                    type="button"
+                    className="block text-primary hover:underline"
+                    onClick={() => setShowDeleted((v) => !v)}
+                  >
+                    {showDeleted ? "Hide" : "Show"} deleted payments
+                  </button>
+                )}
+                <span className="flex items-center gap-1">
+                  <Eye className="size-3" /> Indicates viewable by customers
+                </span>
+              </div>
             </div>
           </div>
         )}
 
+        {/* add / edit dialog */}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="max-w-sm">
             <DialogHeader>
-              <DialogTitle>Add a Payment</DialogTitle>
+              <DialogTitle>{editing ? "Edit Payment" : "Add a Payment"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <div>
@@ -310,8 +494,8 @@ export function PaymentsTab({ contract, totals, onPatch }: Props) {
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={addPayment} disabled={!Number(amount)}>
-                Add Payment
+              <Button onClick={submitPayment} disabled={!Number(amount)}>
+                {editing ? "Save" : "Add Payment"}
               </Button>
             </DialogFooter>
           </DialogContent>

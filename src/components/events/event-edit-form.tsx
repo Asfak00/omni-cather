@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { ContactsSection } from "@/components/contract/contacts-section";
 import { cn } from "@/lib/utils";
 
@@ -95,7 +95,15 @@ export function EventEditForm({ initialContract, settings, allContracts }: Props
 
   return (
     <div className="space-y-4 pb-24">
-      <h1>Editing {contract.eventName || "Event"}</h1>
+      <div>
+        <Link
+          href={`/events/${contract.id}`}
+          className="mb-1 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+        >
+          ← Back to event
+        </Link>
+        <h1>Editing {contract.eventName || "Event"}</h1>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
         <div className="space-y-4">
@@ -603,10 +611,10 @@ export function EventEditForm({ initialContract, settings, allContracts }: Props
               <CardTitle className="text-primary">Additional Information</CardTitle>
             </CardHeader>
             <CardContent>
-              <Textarea
+              <RichTextEditor
                 rows={3}
                 value={contract.additionalInformation ?? ""}
-                onChange={(e) => update({ additionalInformation: e.target.value })}
+                onChange={(v) => update({ additionalInformation: v })}
                 placeholder="Anything else about this event..."
               />
             </CardContent>

@@ -161,6 +161,8 @@ export function buildDemoContracts(settings: RestaurantSettings): Contract[] {
         body: `Hello Anup, We are thrilled to be hosting your event on ${format(new Date(), "EEEE, MMMM d")}. Please review the attached contract and let us know if you have any questions.`,
         author: "Barry Huang",
         at: iso(1, 14, 22),
+        viewed: true,
+        sharedDocs: ["Contract"],
       },
     ],
     tasks: [
@@ -404,6 +406,8 @@ export function buildDemoContracts(settings: RestaurantSettings): Contract[] {
         body: "Hello Kirby, We are thrilled to be hosting your event. One bill for all charges will be given to Account unless prior arrangements are made.",
         author: "Barry Huang",
         at: iso(8, 14, 22),
+        viewed: true,
+        sharedDocs: ["Contract"],
       },
     ],
     tasks: [

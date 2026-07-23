@@ -40,7 +40,22 @@ export function LineItemsSection({
 }: Props) {
   const sectionItems = items.filter((i) => i.section === section);
   const [expanded, setExpanded] = React.useState<Set<string>>(new Set());
+  const [dragId, setDragId] = React.useState<string | null>(null);
+  const [dragOverId, setDragOverId] = React.useState<string | null>(null);
   const total = sectionItems.reduce((sum, i) => sum + lineItemTotal(i), 0);
+
+  /** Drop `dragId` at the position of `targetId` within this section */
+  const reorder = (targetId: string) => {
+    if (!dragId || dragId === targetId) return;
+    const ordered = [...sectionItems];
+    const from = ordered.findIndex((i) => i.id === dragId);
+    const to = ordered.findIndex((i) => i.id === targetId);
+    if (from === -1 || to === -1) return;
+    const [moved] = ordered.splice(from, 1);
+    ordered.splice(to, 0, moved);
+    // other sections keep their internal order; this section is re-written
+    onItemsChange([...items.filter((i) => i.section !== section), ...ordered]);
+  };
 
   const updateItem = (id: string, patch: Partial<ContractLineItem>) => {
     onItemsChange(items.map((i) => (i.id === id ? { ...i, ...patch } : i)));
@@ -128,6 +143,23 @@ export function LineItemsSection({
               onToggleExpand={() => toggleExpand(item.id)}
               onChange={(patch) => updateItem(item.id, patch)}
               onDelete={() => deleteItem(item.id)}
+              isDragging={dragId === item.id}
+              isDragOver={dragOverId === item.id && dragId !== item.id}
+              onDragStart={() => setDragId(item.id)}
+              onDragEnd={() => {
+                setDragId(null);
+                setDragOverId(null);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                setDragOverId(item.id);
+              }}
+              onDrop={() => {
+                reorder(item.id);
+                setDragId(null);
+                setDragOverId(null);
+              }}
             />
           ))
         )}

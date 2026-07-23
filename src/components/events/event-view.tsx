@@ -10,7 +10,6 @@ import {
   Copy,
   FilePen,
   MapPin,
-  Paperclip,
   Pencil,
   Settings,
   Trash2,
@@ -30,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/contract/status-badge";
+import { AttachedFilesCard } from "./attached-files-card";
 import { DetailsTab } from "./tabs/details-tab";
 import { DocsTab } from "./tabs/docs-tab";
 import { DiscussionTab } from "./tabs/discussion-tab";
@@ -47,9 +47,11 @@ interface Props {
   initialContract: Contract;
   settings: RestaurantSettings;
   ghlLinks: GHLLinks;
+  /** contact notes pulled live from GHL for the Log tab */
+  ghlNotes?: { id: string; body: string; dateAdded: string }[];
 }
 
-export function EventView({ initialContract, settings, ghlLinks }: Props) {
+export function EventView({ initialContract, settings, ghlLinks, ghlNotes }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [contract, setContract] = React.useState(initialContract);
@@ -108,6 +110,12 @@ export function EventView({ initialContract, settings, ghlLinks }: Props) {
     <div className="space-y-4">
       {/* page header */}
       <div>
+        <Link
+          href="/events"
+          className="mb-1 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+        >
+          ← Events
+        </Link>
         <div className="flex flex-wrap items-center gap-3">
           <StatusBadge status={contract.status} />
           <h1>{contract.eventName}</h1>
@@ -280,7 +288,12 @@ export function EventView({ initialContract, settings, ghlLinks }: Props) {
             </TabsList>
 
             <TabsContent value="details" className="mt-4">
-              <DetailsTab contract={contract} settings={settings} totals={totals} />
+              <DetailsTab
+                contract={contract}
+                settings={settings}
+                totals={totals}
+                ghlContactUrl={ghlLinks.contact}
+              />
             </TabsContent>
             <TabsContent value="docs" className="mt-4">
               <DocsTab
@@ -294,7 +307,12 @@ export function EventView({ initialContract, settings, ghlLinks }: Props) {
               <DiscussionTab contract={contract} settings={settings} onPatch={patch} />
             </TabsContent>
             <TabsContent value="payments" className="mt-4">
-              <PaymentsTab contract={contract} totals={totals} onPatch={patch} />
+              <PaymentsTab
+                contract={contract}
+                totals={totals}
+                onPatch={patch}
+                ghlInvoicesUrl={ghlLinks.invoices}
+              />
             </TabsContent>
             <TabsContent value="tasks" className="mt-4">
               <TasksTab contract={contract} onPatch={patch} />
@@ -303,22 +321,14 @@ export function EventView({ initialContract, settings, ghlLinks }: Props) {
               <NotesTab contract={contract} settings={settings} onPatch={patch} />
             </TabsContent>
             <TabsContent value="log" className="mt-4">
-              <LogTab contract={contract} settings={settings} />
+              <LogTab contract={contract} settings={settings} ghlNotes={ghlNotes} />
             </TabsContent>
           </Tabs>
         </div>
 
         {/* right rail */}
         <div className="space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <h4 className="mb-2 font-semibold">Attached files</h4>
-              <p className="text-sm text-muted-foreground">No Files</p>
-              <Button variant="outline" size="sm" className="mt-3">
-                <Paperclip className="size-3.5" /> Choose a File
-              </Button>
-            </CardContent>
-          </Card>
+          <AttachedFilesCard contract={contract} onContractUpdate={setContract} />
         </div>
       </div>
     </div>

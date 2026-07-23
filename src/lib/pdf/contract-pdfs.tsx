@@ -122,6 +122,24 @@ const s = StyleSheet.create({
 
 /* ---------------- shared pieces ---------------- */
 
+/** Rich-text fields store HTML — flatten to readable plain text for PDFs */
+function htmlToText(html?: string): string {
+  if (!html) return "";
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li|h[1-6]|tr)>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "• ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#x?27;|&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 interface Ctx {
   contract: Contract;
   settings: RestaurantSettings;
@@ -390,13 +408,13 @@ function KitchenSheet({ ctx }: { ctx: Ctx }) {
         {c.specialInstructions ? (
           <View>
             <Text style={s.sectionTitle}>Special Instructions / Allergies</Text>
-            <Text>{c.specialInstructions}</Text>
+            <Text>{htmlToText(c.specialInstructions)}</Text>
           </View>
         ) : null}
         {c.kitchenNotes ? (
           <View>
             <Text style={s.sectionTitle}>Kitchen Notes</Text>
-            <Text>{c.kitchenNotes}</Text>
+            <Text>{htmlToText(c.kitchenNotes)}</Text>
           </View>
         ) : null}
         <Footer ctx={ctx} />
@@ -422,13 +440,13 @@ function BanquetEventOrder({ ctx }: { ctx: Ctx }) {
         {c.specialInstructions ? (
           <View>
             <Text style={s.sectionTitle}>Special Instructions</Text>
-            <Text>{c.specialInstructions}</Text>
+            <Text>{htmlToText(c.specialInstructions)}</Text>
           </View>
         ) : null}
         {c.setupNotes ? (
           <View>
             <Text style={s.sectionTitle}>Setup</Text>
-            <Text>{c.setupNotes}</Text>
+            <Text>{htmlToText(c.setupNotes)}</Text>
           </View>
         ) : null}
 
@@ -467,12 +485,12 @@ function ContractDoc({ ctx }: { ctx: Ctx }) {
         {c.billingNotes ? (
           <View>
             <Text style={s.sectionTitle}>Billing Notes</Text>
-            <Text>{c.billingNotes}</Text>
+            <Text>{htmlToText(c.billingNotes)}</Text>
           </View>
         ) : null}
 
         <Text style={s.sectionTitle}>Terms &amp; Conditions</Text>
-        <Text style={s.terms}>{c.termsAndConditions}</Text>
+        <Text style={s.terms}>{htmlToText(c.termsAndConditions)}</Text>
 
         <View style={s.signBlock}>
           <Text style={s.signLine}>
@@ -514,7 +532,7 @@ function InvoiceDoc({ ctx }: { ctx: Ctx }) {
         {c.billingNotes ? (
           <View>
             <Text style={s.sectionTitle}>Notes</Text>
-            <Text>{c.billingNotes}</Text>
+            <Text>{htmlToText(c.billingNotes)}</Text>
           </View>
         ) : null}
         <Footer ctx={ctx} />

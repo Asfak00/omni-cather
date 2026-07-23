@@ -8,6 +8,7 @@ import type {
   LineItemCategory,
 } from "@/types";
 import { currency, lineItemTotal } from "@/lib/calculations";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -36,6 +37,13 @@ interface Props {
   onToggleExpand: () => void;
   onChange: (patch: Partial<ContractLineItem>) => void;
   onDelete: () => void;
+  /* drag & drop reordering */
+  isDragging?: boolean;
+  isDragOver?: boolean;
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDrop?: () => void;
 }
 
 export function LineItemRow({
@@ -44,18 +52,49 @@ export function LineItemRow({
   onToggleExpand,
   onChange,
   onDelete,
+  isDragging,
+  isDragOver,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
 }: Props) {
   const total = lineItemTotal(item);
   const missingCategory = !item.category;
+  const [dragEnabled, setDragEnabled] = React.useState(false);
 
   return (
-    <div className="rounded-md border bg-muted/20">
+    <div
+      className={cn(
+        "rounded-md border bg-muted/20 transition-opacity",
+        isDragging && "opacity-40",
+        isDragOver && "border-primary ring-2 ring-primary/30"
+      )}
+      draggable={dragEnabled}
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        onDragStart?.();
+      }}
+      onDragEnd={() => {
+        setDragEnabled(false);
+        onDragEnd?.();
+      }}
+      onDragOver={onDragOver}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDrop?.();
+      }}
+    >
       {/* main row */}
       <div className="flex items-start gap-2 p-2">
         <button
           type="button"
-          className="mt-2 cursor-grab text-muted-foreground"
+          className="mt-2 cursor-grab text-muted-foreground active:cursor-grabbing"
           title="Drag to reorder"
+          // only the grip arms the row for dragging, so text
+          // selection inside inputs keeps working
+          onMouseDown={() => setDragEnabled(true)}
+          onMouseUp={() => setDragEnabled(false)}
         >
           <GripVertical className="size-4" />
         </button>

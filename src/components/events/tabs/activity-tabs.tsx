@@ -1,15 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { Plus, Trash2 } from "lucide-react";
 import type { Contract, NoteItem, RestaurantSettings, TaskItem } from "@/types";
 import { currency } from "@/lib/calculations";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { DatePicker } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 
@@ -139,11 +140,11 @@ export function NotesTab({
     <Card>
       <CardContent className="pt-6">
         <div className="mb-4 space-y-2">
-          <Textarea
+          <RichTextEditor
             rows={3}
             placeholder="Write an internal note about this event..."
             value={body}
-            onChange={(e) => setBody(e.target.value)}
+            onChange={setBody}
           />
           <Button size="sm" onClick={addNote} disabled={!body.trim()}>
             <Plus className="size-4" /> Add Note
@@ -158,7 +159,10 @@ export function NotesTab({
           <div className="space-y-3">
             {[...notes].reverse().map((note) => (
               <div key={note.id} className="rounded-md border px-4 py-3">
-                <p className="text-sm whitespace-pre-wrap">{note.body}</p>
+                <div
+                  className="text-sm [&_a]:text-primary [&_a]:underline"
+                  dangerouslySetInnerHTML={{ __html: note.body }}
+                />
                 <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                   <span>
                     {note.author} ·{" "}
@@ -185,49 +189,89 @@ export function NotesTab({
 
 /* ---------------- Log ---------------- */
 
+const title = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
+
 export function LogTab({
   contract,
   settings,
+  ghlNotes,
 }: {
   contract: Contract;
   settings: RestaurantSettings;
+  ghlNotes?: { id: string; body: string; dateAdded: string }[];
 }) {
   const owner = settings.owners.find((o) => o.id === contract.ownerId);
 
-  const entries: { at: string; text: string }[] = [
+  const entries: { at: string; kind: string; text: string; by: string }[] = [
     {
       at: contract.createdAt,
-      text: `Event created from GHL contact ${contract.contactSnapshot.name} by ${owner?.name ?? "Sub-account user"}`,
+      kind: "LEAD",
+      text: `${contract.contactSnapshot.name} was converted into event ${contract.eventName}, account ${contract.contactSnapshot.companyName ?? "—"}, and contact ${contract.contactSnapshot.name}`,
+      by: owner?.name ?? "You",
+    },
+    {
+      at: contract.createdAt,
+      kind: "EVENT",
+      text: `Contract & Event Order: ${contract.orderNumber} was created under event ${contract.eventName}`,
+      by: owner?.name ?? "You",
     },
     ...(contract.statusHistory ?? []).map((h) => ({
       at: h.at,
-      text: `Status changed ${h.from ? `from ${h.from} ` : ""}to ${h.to} by ${h.by}`,
+      kind: "EVENT",
+      text: `${contract.eventName} - status was changed ${h.from ? `from ${title(h.from)} ` : ""}to ${title(h.to)}`,
+      by: h.by,
     })),
-    ...(contract.payments ?? []).map((p) => ({
-      at: p.date ? `${p.date}T12:00:00` : contract.updatedAt,
-      text: `Payment of ${currency(p.amount)} recorded (${p.method ?? "unknown method"}) — ${p.status}`,
+    ...(contract.payments ?? [])
+      .filter((p) => !p.deleted)
+      .map((p) => ({
+        at: p.date ? `${p.date}T12:00:00` : contract.updatedAt,
+        kind: "EVENT",
+        text: `A payment of ${currency(p.amount)} was created for event ${contract.eventName}`,
+        by: owner?.name ?? "You",
+      })),
+    ...(contract.messages ?? [])
+      .filter((m) => !m.draft)
+      .map((m) => ({
+        at: m.at,
+        kind: "EVENT",
+        text:
+          m.sharedDocs?.length
+            ? `Document ${m.sharedDocs.join(", ")} was shared from event ${contract.eventName}`
+            : `${m.channel === "guest" ? "Guest" : "Staff"} message “${m.subject}” was sent from event ${contract.eventName}`,
+        by: m.author,
+      })),
+    ...(ghlNotes ?? []).map((n) => ({
+      at: n.dateAdded,
+      kind: "GHL",
+      text: `GHL contact note: ${n.body.replace(/<[^>]+>/g, " ").slice(0, 160)}`,
+      by: "GHL",
     })),
-    ...(contract.messages ?? []).map((m) => ({
-      at: m.at,
-      text: `${m.channel === "guest" ? "Guest" : "Staff"} message “${m.subject}” sent by ${m.author}`,
-    })),
-    {
-      at: contract.updatedAt,
-      text: `Last updated`,
-    },
   ].sort((a, b) => (a.at < b.at ? 1 : -1));
 
   return (
     <Card>
       <CardContent className="pt-6">
-        <div className="space-y-0 divide-y rounded-md border">
+        <div className="divide-y rounded-md border">
           {entries.map((entry, i) => (
-            <div key={i} className="flex items-start gap-3 px-4 py-3 text-sm">
-              <span className="mt-1 size-2 shrink-0 rounded-full bg-primary" />
-              <span className="flex-1">{entry.text}</span>
-              <span className="shrink-0 text-xs text-muted-foreground">
-                {format(new Date(entry.at), "MMM d, yyyy h:mm a")}
-              </span>
+            <div key={i} className="flex items-start gap-4 px-4 py-3">
+              <Badge
+                className={cn(
+                  "mt-0.5 w-14 justify-center bg-teal-100 text-[9px] font-bold text-teal-800",
+                  entry.kind === "GHL" && "bg-indigo-100 text-indigo-800"
+                )}
+              >
+                {entry.kind}
+              </Badge>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-primary">{entry.text}</p>
+                <p className="text-xs text-muted-foreground">
+                  By {entry.by}{" "}
+                  <span>
+                    at {format(new Date(entry.at), "M/d/yyyy")} (
+                    {formatDistanceToNow(new Date(entry.at), { addSuffix: true })})
+                  </span>
+                </p>
+              </div>
             </div>
           ))}
         </div>

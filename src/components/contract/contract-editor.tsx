@@ -10,8 +10,9 @@ import type { Contract, RestaurantSettings } from "@/types";
 import { computeTotals, formatTime } from "@/lib/calculations";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { StatusBadge } from "./status-badge";
+import { ContactValue } from "@/components/shared/contact-value";
 import { ContactInfoBlock } from "./contact-info-block";
 import { EventsTableBlock } from "./events-table-block";
 import { LineItemsSection } from "./line-items-section";
@@ -20,9 +21,10 @@ import { BillingWidget } from "./billing-widget";
 interface Props {
   initialContract: Contract;
   settings: RestaurantSettings;
+  ghlContactUrl?: string;
 }
 
-export function ContractEditor({ initialContract, settings }: Props) {
+export function ContractEditor({ initialContract, settings, ghlContactUrl }: Props) {
   const router = useRouter();
   const [contract, setContract] = React.useState<Contract>(initialContract);
   const [saving, setSaving] = React.useState(false);
@@ -66,10 +68,28 @@ export function ContractEditor({ initialContract, settings }: Props) {
     }
   }
 
+  const SECTIONS = [
+    { id: "sec-contact", label: "Contact Info" },
+    { id: "sec-instructions", label: "Instructions" },
+    { id: "sec-food", label: "Food" },
+    { id: "sec-beverage", label: "Beverage" },
+    { id: "sec-other", label: "Other Items" },
+    { id: "sec-kitchen", label: "Kitchen" },
+    { id: "sec-setup", label: "Setup" },
+    { id: "sec-billing", label: "Billing" },
+    { id: "sec-terms", label: "Terms" },
+  ];
+
   return (
     <div className="space-y-4 pb-24">
       {/* header */}
       <div>
+        <Link
+          href={`/events/${contract.id}?tab=docs`}
+          className="mb-1 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+        >
+          ← Back to event
+        </Link>
         <h1>Editing Contract &amp; Event Order: {contract.orderNumber}</h1>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5">
@@ -97,97 +117,131 @@ export function ContractEditor({ initialContract, settings }: Props) {
             <Users className="size-4" />
             {contract.expectedGuests || 0} guests expected
           </span>
-          <span className="flex items-center gap-1.5">
+          <span className="flex flex-wrap items-center gap-1.5">
             <User className="size-4" />
-            {c.name}
-            {c.companyName && ` of ${c.companyName}`}
-            {c.phone && ` • ${c.phone}`}
-            {c.email && ` • ${c.email}`}
+            <ContactValue type="link" value={c.name} href={ghlContactUrl} />
+            {c.companyName && <span>of {c.companyName}</span>}
+            {c.phone && (
+              <>
+                <span>•</span> <ContactValue type="phone" value={c.phone} />
+              </>
+            )}
+            {c.email && (
+              <>
+                <span>•</span> <ContactValue type="email" value={c.email} />
+              </>
+            )}
           </span>
         </div>
       </div>
 
-      <ContactInfoBlock contract={contract} settings={settings} />
-      <EventsTableBlock contract={contract} settings={settings} />
+      {/* section quick-nav */}
+      <div className="sticky top-0 z-10 -mx-1 flex gap-1.5 overflow-x-auto rounded-lg border bg-card/95 p-1.5 backdrop-blur">
+        {SECTIONS.map((s) => (
+          <a
+            key={s.id}
+            href={`#${s.id}`}
+            className="whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            {s.label}
+          </a>
+        ))}
+      </div>
 
-      <Card>
+      <div id="sec-contact" className="scroll-mt-20 space-y-4">
+        <ContactInfoBlock
+          contract={contract}
+          settings={settings}
+          ghlContactUrl={ghlContactUrl}
+        />
+        <EventsTableBlock contract={contract} settings={settings} />
+      </div>
+
+      <Card id="sec-instructions" className="scroll-mt-20">
         <CardHeader>
           <CardTitle className="text-primary">Special Instructions</CardTitle>
         </CardHeader>
         <CardContent>
-          <Textarea
+          <RichTextEditor
             rows={3}
             placeholder="Dietary restrictions, timing notes, AV needs..."
             value={contract.specialInstructions}
-            onChange={(e) => update({ specialInstructions: e.target.value })}
+            onChange={(v) => update({ specialInstructions: v })}
           />
         </CardContent>
       </Card>
 
-      <LineItemsSection
-        section="food"
-        items={contract.lineItems}
-        menus={settings.menus}
-        expectedGuests={contract.expectedGuests}
-        onItemsChange={(lineItems) => update({ lineItems })}
-      />
-      <LineItemsSection
-        section="beverage"
-        items={contract.lineItems}
-        menus={settings.menus}
-        expectedGuests={contract.expectedGuests}
-        onItemsChange={(lineItems) => update({ lineItems })}
-      />
-      <LineItemsSection
-        section="other"
-        items={contract.lineItems}
-        menus={settings.menus}
-        expectedGuests={contract.expectedGuests}
-        onItemsChange={(lineItems) => update({ lineItems })}
-      />
+      <div id="sec-food" className="scroll-mt-20">
+        <LineItemsSection
+          section="food"
+          items={contract.lineItems}
+          menus={settings.menus}
+          expectedGuests={contract.expectedGuests}
+          onItemsChange={(lineItems) => update({ lineItems })}
+        />
+      </div>
+      <div id="sec-beverage" className="scroll-mt-20">
+        <LineItemsSection
+          section="beverage"
+          items={contract.lineItems}
+          menus={settings.menus}
+          expectedGuests={contract.expectedGuests}
+          onItemsChange={(lineItems) => update({ lineItems })}
+        />
+      </div>
+      <div id="sec-other" className="scroll-mt-20">
+        <LineItemsSection
+          section="other"
+          items={contract.lineItems}
+          menus={settings.menus}
+          expectedGuests={contract.expectedGuests}
+          onItemsChange={(lineItems) => update({ lineItems })}
+        />
+      </div>
 
       {/* Kitchen Notes — extracted into the Kitchen Sheet PDF */}
-      <Card>
+      <Card id="sec-kitchen" className="scroll-mt-20">
         <CardHeader>
           <CardTitle className="text-primary">Kitchen Notes</CardTitle>
         </CardHeader>
         <CardContent>
-          <Textarea
+          <RichTextEditor
             rows={3}
             placeholder="Prep notes for the kitchen team — allergies, plating, timing..."
             value={contract.kitchenNotes ?? ""}
-            onChange={(e) => update({ kitchenNotes: e.target.value })}
+            onChange={(v) => update({ kitchenNotes: v })}
           />
         </CardContent>
       </Card>
 
       {/* Setup — extracted into the Banquet Event Order PDF */}
-      <Card>
+      <Card id="sec-setup" className="scroll-mt-20">
         <CardHeader>
           <CardTitle className="text-primary">Setup</CardTitle>
         </CardHeader>
         <CardContent>
-          <Textarea
+          <RichTextEditor
             rows={3}
             placeholder="Room setup for staff — tables, AV, decorations, floor plan..."
             value={contract.setupNotes ?? ""}
-            onChange={(e) => update({ setupNotes: e.target.value })}
+            onChange={(v) => update({ setupNotes: v })}
           />
         </CardContent>
       </Card>
 
-      <BillingWidget contract={contract} totals={totals} onChange={update} />
+      <div id="sec-billing" className="scroll-mt-20 space-y-4">
+        <BillingWidget contract={contract} totals={totals} onChange={update} />
+      </div>
 
-      <Card>
+      <Card id="sec-terms" className="scroll-mt-20">
         <CardHeader>
           <CardTitle className="text-primary">Terms &amp; Conditions</CardTitle>
         </CardHeader>
         <CardContent>
-          <Textarea
+          <RichTextEditor
             rows={12}
-            className="text-sm leading-relaxed"
             value={contract.termsAndConditions}
-            onChange={(e) => update({ termsAndConditions: e.target.value })}
+            onChange={(v) => update({ termsAndConditions: v })}
           />
         </CardContent>
       </Card>

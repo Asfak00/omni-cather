@@ -131,6 +131,8 @@ export interface PaymentRecord {
   method?: string;
   date?: string;
   status: "new" | "paid";
+  /** soft-deleted; shown only via "Show deleted payments" */
+  deleted?: boolean;
 }
 
 export interface DiscussionMessage {
@@ -140,6 +142,12 @@ export interface DiscussionMessage {
   body: string;
   author: string;
   at: string;
+  /** saved but not sent */
+  draft?: boolean;
+  /** whether the recipient opened it (guest messages) */
+  viewed?: boolean;
+  /** document names shared with this message */
+  sharedDocs?: string[];
 }
 
 export interface TaskItem {
@@ -153,6 +161,14 @@ export interface NoteItem {
   id: string;
   body: string;
   author: string;
+  at: string;
+}
+
+export interface AttachedFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
   at: string;
 }
 
@@ -231,6 +247,9 @@ export interface Contract {
   messages?: DiscussionMessage[];
   tasks?: TaskItem[];
   notes?: NoteItem[];
+  attachments?: AttachedFile[];
+  /** hide financials from the guest-facing portal */
+  portalHidden?: boolean;
 
   createdAt: string;
   updatedAt: string;
