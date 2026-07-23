@@ -21,9 +21,9 @@ export function Topbar() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button render={<Link href="/contacts" />} size="sm">
+        <Button render={<Link href="/make-contract" />} size="sm">
           <Plus className="size-4" />
-          New
+          New Contract
         </Button>
       </div>
     </header>

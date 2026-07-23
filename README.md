@@ -10,9 +10,12 @@ Proposal) that shares out through GHL.
 
 ```
 GHL reservation form
-      │  (lead lands in GHL contacts)
+      │  (lead lands in GHL contacts — contacts stay in GHL)
       ▼
-Contacts page  ──"Make Contract"──▶  Contract editor
+GHL contact ──"Make Contract" link──▶  /make-contract?contactId={{contact.id}}
+                                        │  (draft auto-created)
+                                        ▼
+                                     Contract editor
                                         │  event details · areas · status
                                         │  Food / Beverage / Other line items
                                         │  Add from Menu · Add Freehand
@@ -59,7 +62,7 @@ whole flow is testable immediately.
 
 | Route | What it does |
 |---|---|
-| `/contacts` | Live GHL contact list (search, tags) → "Make Contract" |
+| `/make-contract?contactId=...` | Entry point opened from GHL — auto-creates a draft contract for that contact and opens the editor (without a contactId it shows GHL setup instructions) |
 | `/contracts` | All contracts with status + grand total |
 | `/contracts/[id]` | Full contract editor (event details, contacts, menus, line items, billing widget, terms) |
 | `/contracts/[id]/docs` | Document set with Share / Email / Link → GHL pages |

@@ -70,8 +70,12 @@ export function ContractsList() {
         <CardHeader>
           <CardTitle>No contracts yet</CardTitle>
           <CardDescription>
-            Go to <Link href="/contacts" className="underline text-primary">Contacts</Link>{" "}
-            and click “Make Contract” on a lead to start one.
+            Contracts start from GHL — click “Make Contract” on a contact
+            there, or see{" "}
+            <Link href="/make-contract" className="underline text-primary">
+              how to set up the GHL link
+            </Link>
+            .
           </CardDescription>
         </CardHeader>
       </Card>

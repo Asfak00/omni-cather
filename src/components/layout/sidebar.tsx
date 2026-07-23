@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Users,
   FileText,
+  FilePlus2,
   Settings2,
   Palette,
   UtensilsCrossed,
@@ -16,8 +16,8 @@ const NAV = [
   {
     label: "Workspace",
     items: [
-      { href: "/contacts", label: "Contacts", icon: Users },
       { href: "/contracts", label: "Contracts & Events", icon: FileText },
+      { href: "/make-contract", label: "Make Contract (from GHL)", icon: FilePlus2 },
     ],
   },
   {
