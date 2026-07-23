@@ -389,6 +389,12 @@ function KitchenSheet({ ctx }: { ctx: Ctx }) {
             <Text>{c.specialInstructions}</Text>
           </View>
         ) : null}
+        {c.kitchenNotes ? (
+          <View>
+            <Text style={s.sectionTitle}>Kitchen Notes</Text>
+            <Text>{c.kitchenNotes}</Text>
+          </View>
+        ) : null}
         <Footer ctx={ctx} />
       </Page>
     </Document>
@@ -413,6 +419,12 @@ function BanquetEventOrder({ ctx }: { ctx: Ctx }) {
           <View>
             <Text style={s.sectionTitle}>Special Instructions</Text>
             <Text>{c.specialInstructions}</Text>
+          </View>
+        ) : null}
+        {c.setupNotes ? (
+          <View>
+            <Text style={s.sectionTitle}>Setup</Text>
+            <Text>{c.setupNotes}</Text>
           </View>
         ) : null}
 

@@ -62,12 +62,13 @@ whole flow is testable immediately.
 
 | Route | What it does |
 |---|---|
-| `/make-contract?contactId=...` | Entry point opened from GHL — auto-creates a draft contract for that contact and opens the editor (without a contactId it shows GHL setup instructions) |
-| `/contracts` | All contracts with status + grand total |
-| `/contracts/[id]` | Full contract editor (event details, contacts, menus, line items, billing widget, terms) |
-| `/contracts/[id]/docs` | Document set with Share / Email / Link → GHL pages |
+| `/make-contract?contactId=...` | Entry point opened from GHL — auto-creates a draft event + contract for that contact (without a contactId it shows GHL setup instructions) |
+| `/events` | Events list grouped Today / Next 7 Days / Beyond, with search + Upcoming/All filter |
+| `/events/[id]` | Event view with tabs: Details, Docs, Discussion, Payments, Tasks, Notes, Log |
+| `/events/[id]/edit` | Event editor (dates via shadcn calendar, guests, managers, lead sources, financial summary, custom fields) |
+| `/contracts/[id]` | Contract & Event Order editor (contact info, line items from menus, kitchen notes, setup, billing widget with custom rows & tax compounding, terms) |
 | `/settings/restaurant` | Menus, taxes & fees, venue areas, owners, event styles/types, default terms |
-| `/settings/theme` | Theme colors, fonts, heading/paragraph sizes, radius — live preview, applied app-wide |
+| `/settings/theme` | Theme colors, fonts, heading/paragraph sizes, radius — live preview + auto-save |
 
 ## Folder structure
 

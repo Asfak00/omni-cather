@@ -4,6 +4,7 @@ import type {
   Contract,
   ContractLineItem,
   ContractTotals,
+  PaymentRecord,
 } from "@/types";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -36,51 +37,120 @@ function chargeableBase(
     .reduce((sum, i) => sum + lineItemTotal(i), 0);
 }
 
+/** Billing-widget breakdown rows grouped by line-item category */
+function categoryTotals(items: ContractLineItem[]) {
+  const map = new Map<string, number>();
+  for (const item of items) {
+    const key = item.category || "Uncategorized";
+    map.set(key, (map.get(key) ?? 0) + lineItemTotal(item));
+  }
+  return Array.from(map.entries()).map(([category, total]) => ({
+    category,
+    total: round2(total),
+  }));
+}
+
 export function computeTotals(
   lineItems: ContractLineItem[],
-  billing: BillingSettings
+  billing: BillingSettings,
+  opts: { expectedGuests?: number; payments?: PaymentRecord[] } = {}
 ): ContractTotals {
   const foodTotal = sectionTotal(lineItems, "food");
   const beverageTotal = sectionTotal(lineItems, "beverage");
   const otherTotal = sectionTotal(lineItems, "other");
   const subtotal = round2(foodTotal + beverageTotal + otherTotal);
 
-  const salesTax = round2(
-    (chargeableBase(lineItems, "Sales Tax") * billing.salesTaxRate) / 100
-  );
-  const gratuity = round2(
-    (chargeableBase(lineItems, "Gratuity") * billing.gratuityRate) / 100
-  );
-  const adminFee = round2(
-    (chargeableBase(lineItems, "Admin Fee") * billing.adminFeeRate) / 100
-  );
+  const rates: Record<ApplicableCharge, number> = {
+    "Sales Tax": billing.salesTaxRate,
+    Gratuity: billing.gratuityRate,
+    "Admin Fee": billing.adminFeeRate,
+  };
+
+  // First pass: each charge computed from its own item base
+  const baseAmounts: Record<ApplicableCharge, number> = {
+    "Sales Tax": round2((chargeableBase(lineItems, "Sales Tax") * rates["Sales Tax"]) / 100),
+    Gratuity: round2((chargeableBase(lineItems, "Gratuity") * rates.Gratuity) / 100),
+    "Admin Fee": round2((chargeableBase(lineItems, "Admin Fee") * rates["Admin Fee"]) / 100),
+  };
+
+  // Second pass: apply "include totals from" compounding — e.g. Sales Tax
+  // configured to also tax the Gratuity and/or Admin Fee amounts.
+  const finalAmounts = { ...baseAmounts };
+  for (const charge of Object.keys(baseAmounts) as ApplicableCharge[]) {
+    const settings = billing.chargeSettings?.[charge];
+    if (settings?.includeFrom?.length) {
+      const extraBase = settings.includeFrom.reduce(
+        (sum, other) => sum + (other !== charge ? baseAmounts[other] : 0),
+        0
+      );
+      finalAmounts[charge] = round2(
+        baseAmounts[charge] + (extraBase * rates[charge]) / 100
+      );
+    }
+  }
+
+  const inTotal = (charge: ApplicableCharge) =>
+    billing.chargeSettings?.[charge]?.excludeFromTotals ? 0 : finalAmounts[charge];
+
+  const customChargeTotals = (billing.customCharges ?? []).map((c) => ({
+    id: c.id,
+    label: c.label,
+    total: round2(c.mode === "percent" ? (subtotal * c.value) / 100 : c.value),
+  }));
+  const customTotal = customChargeTotals.reduce((s, c) => s + c.total, 0);
 
   const grandTotal = round2(
-    subtotal + salesTax + gratuity + adminFee + (billing.roomRental || 0)
+    subtotal +
+      inTotal("Sales Tax") +
+      inTotal("Gratuity") +
+      inTotal("Admin Fee") +
+      customTotal +
+      (billing.roomRental || 0)
   );
-  const deposit = round2((grandTotal * (billing.depositPercent || 0)) / 100);
-  const estimatedAmountDue = round2(
-    billing.depositPaid ? grandTotal - deposit : grandTotal
+
+  const deposit = round2(
+    (billing.depositMode ?? "percent") === "amount"
+      ? billing.depositPercent || 0
+      : (grandTotal * (billing.depositPercent || 0)) / 100
   );
+
+  const paid = round2(
+    (opts.payments ?? [])
+      .filter((p) => p.status === "paid")
+      .reduce((s, p) => s + p.amount, 0) + (billing.depositPaid ? deposit : 0)
+  );
+  const remaining = round2(Math.max(0, grandTotal - paid));
+
+  const pricePerPerson = opts.expectedGuests
+    ? round2(subtotal / opts.expectedGuests)
+    : 0;
 
   return {
     foodTotal,
     beverageTotal,
     otherTotal,
+    categoryTotals: categoryTotals(lineItems),
     subtotal,
-    salesTax,
-    gratuity,
-    adminFee,
+    salesTax: finalAmounts["Sales Tax"],
+    gratuity: finalAmounts.Gratuity,
+    adminFee: finalAmounts["Admin Fee"],
+    customChargeTotals,
     roomRental: round2(billing.roomRental || 0),
     fbMinimumMet: subtotal >= (billing.fbMinimum || 0),
     grandTotal,
     deposit,
-    estimatedAmountDue,
+    paid,
+    remaining,
+    pricePerPerson,
+    estimatedAmountDue: remaining,
   };
 }
 
 export function contractTotals(contract: Contract): ContractTotals {
-  return computeTotals(contract.lineItems, contract.billing);
+  return computeTotals(contract.lineItems, contract.billing, {
+    expectedGuests: contract.expectedGuests,
+    payments: contract.payments,
+  });
 }
 
 export const currency = (n: number) =>

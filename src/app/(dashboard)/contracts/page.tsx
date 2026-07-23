@@ -1,18 +1,6 @@
-import { ContractsList } from "@/components/contract/contracts-list";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Contracts | Event Manager" };
-
-export default function ContractsPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1>Contracts &amp; Events</h1>
-        <p className="text-muted-foreground">
-          Every contract created from a GHL contact, with its event details and
-          documents.
-        </p>
-      </div>
-      <ContractsList />
-    </div>
-  );
+/** Contracts are managed from the Events list now */
+export default function LegacyContractsPage() {
+  redirect("/events");
 }

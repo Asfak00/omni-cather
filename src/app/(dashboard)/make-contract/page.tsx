@@ -118,10 +118,10 @@ export default async function MakeContractPage({
               <ExternalLink className="size-4" /> Open GHL contacts
             </a>
             <Link
-              href="/contracts"
+              href="/events"
               className="inline-flex items-center gap-1.5 text-primary underline"
             >
-              <ArrowRight className="size-4" /> Go to contracts
+              <ArrowRight className="size-4" /> Go to events
             </Link>
             <span className="inline-flex items-center gap-1.5 text-muted-foreground">
               <Link2 className="size-4" /> Test locally:{" "}

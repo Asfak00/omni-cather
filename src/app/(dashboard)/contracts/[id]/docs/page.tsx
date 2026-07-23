@@ -1,27 +1,11 @@
-import { notFound } from "next/navigation";
-import { getContract } from "@/lib/store/contracts";
-import { getRestaurantSettings } from "@/lib/store/settings";
-import { ghlAppLinks } from "@/lib/ghl/client";
-import { DocsView } from "@/components/docs/docs-view";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Documents | Event Manager" };
-
-export default async function DocsPage({
+/** Docs now live on the event view — keep old links working */
+export default async function LegacyDocsPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [contract, settings] = await Promise.all([
-    getContract(id),
-    getRestaurantSettings(),
-  ]);
-
-  if (!contract) notFound();
-
-  const ghlLinks = ghlAppLinks(contract.contactId);
-
-  return (
-    <DocsView contract={contract} settings={settings} ghlLinks={ghlLinks} />
-  );
+  redirect(`/events/${id}?tab=docs`);
 }

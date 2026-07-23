@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  FileText,
+  CalendarDays,
   FilePlus2,
   Settings2,
   Palette,
@@ -16,7 +16,7 @@ const NAV = [
   {
     label: "Workspace",
     items: [
-      { href: "/contracts", label: "Contracts & Events", icon: FileText },
+      { href: "/events", label: "Events", icon: CalendarDays },
       { href: "/make-contract", label: "Make Contract (from GHL)", icon: FilePlus2 },
     ],
   },

@@ -62,32 +62,98 @@ export interface ContractLineItem {
   menuItemId?: string;
 }
 
+/** Extra fee row added via "Add a Row" in the billing widget */
+export interface CustomCharge {
+  id: string;
+  label: string;
+  mode: "percent" | "amount"; // percent of subtotal, or flat amount
+  value: number;
+}
+
+/** Per-charge advanced settings ("..." row expander) */
+export interface ChargeSettings {
+  /** compound: also tax the totals of these other charges */
+  includeFrom: ApplicableCharge[];
+  /** show the row but keep it out of the grand total */
+  excludeFromTotals: boolean;
+}
+
 export interface BillingSettings {
   salesTaxRate: number; // percent
   gratuityRate: number; // percent
   adminFeeRate: number; // percent
   roomRental: number; // flat amount
   fbMinimum: number; // food & beverage minimum
-  depositPercent: number; // percent of grand total
+  depositPercent: number; // percent of grand total, or flat amount (see depositMode)
+  depositMode?: "percent" | "amount";
   depositPaid: boolean;
   depositDueDate?: string;
   balanceDueDate?: string;
   transferFinancialsToEvent: boolean;
+  customCharges?: CustomCharge[];
+  chargeSettings?: Partial<Record<ApplicableCharge, ChargeSettings>>;
 }
 
 export interface ContractTotals {
   foodTotal: number;
   beverageTotal: number;
   otherTotal: number;
+  /** breakdown by line-item category (Food, Beverage, Misc, ...) */
+  categoryTotals: { category: string; total: number }[];
   subtotal: number;
   salesTax: number;
   gratuity: number;
   adminFee: number;
+  customChargeTotals: { id: string; label: string; total: number }[];
   roomRental: number;
   fbMinimumMet: boolean;
   grandTotal: number;
   deposit: number;
+  paid: number;
+  remaining: number;
+  pricePerPerson: number;
   estimatedAmountDue: number;
+}
+
+/* -- event activity -- */
+
+export interface StatusChange {
+  from?: EventStatus;
+  to: EventStatus;
+  at: string; // ISO
+  by: string;
+}
+
+export interface PaymentRecord {
+  id: string;
+  label: string;
+  amount: number;
+  method?: string;
+  date?: string;
+  status: "new" | "paid";
+}
+
+export interface DiscussionMessage {
+  id: string;
+  channel: "guest" | "staff";
+  subject: string;
+  body: string;
+  author: string;
+  at: string;
+}
+
+export interface TaskItem {
+  id: string;
+  title: string;
+  done: boolean;
+  dueDate?: string;
+}
+
+export interface NoteItem {
+  id: string;
+  body: string;
+  author: string;
+  at: string;
 }
 
 export type DocStatus = "not_signed" | "signed" | "n/a";
@@ -138,11 +204,19 @@ export interface Contract {
   eventType?: string;
   areaIds: string[];
   expectedGuests: number;
+  guaranteedGuests?: number;
+  mealPeriods?: string;
   ownerId: string;
+  managerIds?: string[];
+  leadSources?: string[];
+  referredBy?: string;
   ticketedEvent: boolean;
 
   /* -- Body -- */
   specialInstructions: string;
+  kitchenNotes?: string;
+  setupNotes?: string;
+  additionalInformation?: string;
   billingNotes: string;
   termsAndConditions: string;
   lineItems: ContractLineItem[];
@@ -150,6 +224,13 @@ export interface Contract {
 
   /* -- Docs -- */
   documents: EventDocument[];
+
+  /* -- Activity -- */
+  statusHistory?: StatusChange[];
+  payments?: PaymentRecord[];
+  messages?: DiscussionMessage[];
+  tasks?: TaskItem[];
+  notes?: NoteItem[];
 
   createdAt: string;
   updatedAt: string;

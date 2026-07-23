@@ -16,6 +16,32 @@ export async function GET() {
  */
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
+
+  // { duplicateOf } → copy an existing contract/event
+  if (body?.duplicateOf) {
+    const source = (await listContracts()).find((c) => c.id === body.duplicateOf);
+    if (!source) {
+      return NextResponse.json({ error: "Contract not found" }, { status: 404 });
+    }
+    const settings = await getRestaurantSettings();
+    const fresh = createContractFromContact(source.contactSnapshot, settings);
+    const contract = await saveContract({
+      ...source,
+      id: fresh.id,
+      orderNumber: fresh.orderNumber,
+      eventId: fresh.eventId,
+      eventName: `${source.eventName} (Copy)`,
+      documents: fresh.documents,
+      status: "PROSPECT",
+      statusHistory: [],
+      payments: [],
+      messages: [],
+      createdAt: fresh.createdAt,
+      updatedAt: fresh.updatedAt,
+    });
+    return NextResponse.json({ contract, created: true }, { status: 201 });
+  }
+
   const contactId: string | undefined = body?.contactId;
   if (!contactId) {
     return NextResponse.json({ error: "contactId is required" }, { status: 400 });
