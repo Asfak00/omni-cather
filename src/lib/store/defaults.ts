@@ -8,8 +8,82 @@ PAYMENT: Final payment is due at the conclusion of the event. Restaurant accepts
 
 GUEST COUNT GUARANTEES: Final guest count must be guaranteed five (5) business days before the event. Saturday, Sunday, and Monday event guarantees are due by the preceding Thursday at 4:00 PM.`;
 
+export const DEFAULT_CATEGORIES: RestaurantSettings["categories"] = [
+  {
+    id: "cat-av",
+    name: "Audio/Visual",
+    internalName: "Audio/Visual",
+    defaultCharges: ["Sales Tax"],
+  },
+  {
+    id: "cat-beverage",
+    name: "Beverage",
+    internalName: "Beverage",
+    defaultCharges: ["Admin Fee", "Gratuity", "Sales Tax"],
+  },
+  {
+    id: "cat-food",
+    name: "Food",
+    internalName: "Food",
+    defaultCharges: ["Admin Fee", "Gratuity", "Sales Tax"],
+  },
+  {
+    id: "cat-labor",
+    name: "Labor",
+    internalName: "Labor",
+    defaultCharges: ["Sales Tax"],
+  },
+  { id: "cat-misc", name: "Misc", internalName: "Misc", defaultCharges: [] },
+];
+
+export const DEFAULT_BILLING_DETAILS: RestaurantSettings["billingDetails"] = [
+  {
+    id: "bd-admin-fee",
+    builtin: "Admin Fee",
+    description: "Admin Fee",
+    internalName: "Admin Fee",
+    defaultValue: "5%",
+    inclusive: false,
+    locations: ["Upon the Palace"],
+    associated: [],
+  },
+  {
+    id: "bd-gratuity",
+    builtin: "Gratuity",
+    description: "Gratuity",
+    internalName: "Gratuity",
+    defaultValue: "20%",
+    inclusive: false,
+    locations: ["Upon the Palace"],
+    associated: [],
+  },
+  {
+    id: "bd-sales-tax",
+    builtin: "Sales Tax",
+    description: "Sales Tax",
+    internalName: "Sales Tax",
+    defaultValue: "8.875%",
+    inclusive: false,
+    locations: ["Upon the Palace"],
+    associated: [],
+  },
+];
+
+export const DEFAULT_DOC_LAYOUTS: RestaurantSettings["docLayouts"] = [
+  { name: "Banquet Event Order", enabled: true },
+  { name: "Contract", enabled: true },
+  { name: "Invoice", enabled: true },
+  { name: "Kitchen Sheet", enabled: true, internal: true },
+  { name: "Menu", enabled: true },
+  { name: "Proposal", enabled: true },
+];
+
 export const DEFAULT_RESTAURANT_SETTINGS: RestaurantSettings = {
   venueName: "Upon the Palace",
+  categories: DEFAULT_CATEGORIES,
+  billingDetails: DEFAULT_BILLING_DETAILS,
+  docLayouts: DEFAULT_DOC_LAYOUTS,
+  docQrEnabled: false,
   menus: [
     {
       id: "menu-sample-apps",

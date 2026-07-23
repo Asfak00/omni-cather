@@ -5,7 +5,7 @@ import { GripVertical, Maximize2, Minimize2, Trash2 } from "lucide-react";
 import type {
   ApplicableCharge,
   ContractLineItem,
-  LineItemCategory,
+  ItemCategory,
 } from "@/types";
 import { currency, lineItemTotal } from "@/lib/calculations";
 import { cn } from "@/lib/utils";
@@ -22,18 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const CATEGORIES: LineItemCategory[] = [
-  "Audio/Visual",
-  "Beverage",
-  "Food",
-  "Labor",
-  "Misc",
-];
-
 const CHARGES: ApplicableCharge[] = ["Admin Fee", "Gratuity", "Sales Tax"];
 
 interface Props {
   item: ContractLineItem;
+  /** categories from Restaurant Settings, with default billing details */
+  categories: ItemCategory[];
   expanded: boolean;
   onToggleExpand: () => void;
   onChange: (patch: Partial<ContractLineItem>) => void;
@@ -49,6 +43,7 @@ interface Props {
 
 export function LineItemRow({
   item,
+  categories,
   expanded,
   onToggleExpand,
   onChange,
@@ -248,19 +243,27 @@ export function LineItemRow({
               <Label className="text-xs font-semibold">Category</Label>
               <Select
                 value={item.category || undefined}
-                onValueChange={(v) =>
-                  onChange({ category: v as LineItemCategory })
-                }
+                onValueChange={(v) => {
+                  if (!v) return;
+                  // assigning a category applies its default billing details
+                  const cat = categories.find((c) => c.name === v);
+                  onChange({
+                    category: v,
+                    ...(cat ? { applicableCharges: [...cat.defaultCharges] } : {}),
+                  });
+                }}
               >
                 <SelectTrigger className="mt-1 w-full">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
+                  {categories
+                    .filter((c) => !c.deleted)
+                    .map((c) => (
+                      <SelectItem key={c.id} value={c.name}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

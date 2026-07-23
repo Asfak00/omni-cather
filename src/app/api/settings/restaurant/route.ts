@@ -3,6 +3,7 @@ import {
   getRestaurantSettings,
   saveRestaurantSettings,
 } from "@/lib/store/settings";
+import { syncSettingsToGhl } from "@/lib/ghl/sync";
 import type { RestaurantSettings } from "@/types";
 
 export async function GET() {
@@ -16,5 +17,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
   const settings = await saveRestaurantSettings(body);
-  return NextResponse.json({ settings });
+  // mirror the settings into a GHL custom value (no-op in demo mode)
+  const ghlSynced = await syncSettingsToGhl(settings);
+  return NextResponse.json({ settings, ghlSynced });
 }

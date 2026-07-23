@@ -1,4 +1,4 @@
-import type { Contract, GHLContact } from "@/types";
+import type { Contract, GHLContact, RestaurantSettings } from "@/types";
 import { ghlConfig, ghlFetch } from "./client";
 import { getContact } from "./contacts";
 import { saveContract } from "@/lib/store/contracts";
@@ -60,6 +60,45 @@ export interface GHLNote {
   id: string;
   body: string;
   dateAdded: string;
+}
+
+/**
+ * Push restaurant settings (picklists, categories, billing details,
+ * doc layouts) into a GHL Custom Value so they live in the
+ * sub-account and other GHL automations can read them. Returns true
+ * when synced, false in demo mode / on error.
+ */
+export async function syncSettingsToGhl(
+  settings: RestaurantSettings
+): Promise<boolean> {
+  const { configured, locationId } = ghlConfig();
+  if (!configured) return false;
+  try {
+    const list = await ghlFetch<{
+      customValues: { id: string; name: string }[];
+    }>(`/locations/${locationId}/customValues`);
+    const existing = (list.customValues ?? []).find(
+      (v) => v.name === "event_manager_settings"
+    );
+    const payload = JSON.stringify({
+      name: "event_manager_settings",
+      value: JSON.stringify(settings),
+    });
+    if (existing) {
+      await ghlFetch(`/locations/${locationId}/customValues/${existing.id}`, {
+        method: "PUT",
+        body: payload,
+      });
+    } else {
+      await ghlFetch(`/locations/${locationId}/customValues`, {
+        method: "POST",
+        body: payload,
+      });
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Contact notes from GHL — merged into the event Log tab. */

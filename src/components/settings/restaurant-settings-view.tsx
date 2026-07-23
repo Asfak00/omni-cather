@@ -2,12 +2,14 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { Loader2, Save } from "lucide-react";
+import { Cloud, CloudOff, Loader2, Save } from "lucide-react";
 import type { RestaurantSettings } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MenuManager } from "./menu-manager";
-import { TaxManager } from "./tax-manager";
+import { PicklistsManager } from "./picklists-manager";
+import { CategoriesManager } from "./categories-manager";
+import { BillingDetailsManager } from "./billing-details-manager";
+import { DocumentsManager } from "./documents-manager";
 import { AreasManager } from "./areas-manager";
 import { GeneralSettings } from "./general-settings";
 
@@ -19,6 +21,7 @@ export function RestaurantSettingsView({
   const [settings, setSettings] = React.useState(initialSettings);
   const [saving, setSaving] = React.useState(false);
   const [dirty, setDirty] = React.useState(false);
+  const [ghlSynced, setGhlSynced] = React.useState<boolean | null>(null);
 
   const update = (patch: Partial<RestaurantSettings>) => {
     setSettings((prev) => ({ ...prev, ...patch }));
@@ -34,8 +37,14 @@ export function RestaurantSettingsView({
         body: JSON.stringify(settings),
       });
       if (!res.ok) throw new Error();
+      const data = await res.json();
+      setGhlSynced(Boolean(data.ghlSynced));
       setDirty(false);
-      toast.success("Restaurant settings saved");
+      toast.success(
+        data.ghlSynced
+          ? "Settings saved & synced to GHL"
+          : "Settings saved — GHL sync activates once credentials are connected"
+      );
     } catch {
       toast.error("Failed to save settings");
     } finally {
@@ -43,13 +52,54 @@ export function RestaurantSettingsView({
     }
   }
 
+  // Auto-save (debounced) so nothing is lost while navigating tabs
+  const skipFirst = React.useRef(true);
+  React.useEffect(() => {
+    if (skipFirst.current) {
+      skipFirst.current = false;
+      return;
+    }
+    if (!dirty) return;
+    const t = setTimeout(async () => {
+      const res = await fetch("/api/settings/restaurant", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      }).catch(() => null);
+      if (res?.ok) {
+        const data = await res.json().catch(() => null);
+        setGhlSynced(Boolean(data?.ghlSynced));
+        setDirty(false);
+      }
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [settings, dirty]);
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1>Restaurant Settings</h1>
           <p className="text-muted-foreground">
-            Menus, taxes and venue data used to build every contract.
+            Picklists, categories, billing details and documents used to build
+            every contract.
+            {ghlSynced !== null && (
+              <span className="ml-2 inline-flex items-center gap-1 text-xs font-medium">
+                {ghlSynced ? (
+                  <>
+                    <Cloud className="size-3.5 text-primary" />
+                    <span className="text-primary">Synced to GHL</span>
+                  </>
+                ) : (
+                  <>
+                    <CloudOff className="size-3.5 text-muted-foreground" />
+                    <span className="text-muted-foreground">
+                      Local only (connect GHL to sync)
+                    </span>
+                  </>
+                )}
+              </span>
+            )}
           </p>
         </div>
         <Button onClick={save} disabled={saving || !dirty}>
@@ -58,25 +108,30 @@ export function RestaurantSettingsView({
           ) : (
             <Save className="size-4" />
           )}
-          Save Changes
+          {dirty ? "Save Changes" : "All Saved"}
         </Button>
       </div>
 
-      <Tabs defaultValue="menus">
-        <TabsList>
-          <TabsTrigger value="menus">Menus</TabsTrigger>
-          <TabsTrigger value="taxes">Taxes &amp; Fees</TabsTrigger>
+      <Tabs defaultValue="picklists">
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="picklists">Picklists</TabsTrigger>
+          <TabsTrigger value="categories">Menu Item Categories</TabsTrigger>
+          <TabsTrigger value="billing">Billing Details</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="areas">Areas</TabsTrigger>
           <TabsTrigger value="general">General</TabsTrigger>
         </TabsList>
-        <TabsContent value="menus" className="mt-4">
-          <MenuManager
-            menus={settings.menus}
-            onChange={(menus) => update({ menus })}
-          />
+        <TabsContent value="picklists" className="mt-4">
+          <PicklistsManager settings={settings} onChange={update} />
         </TabsContent>
-        <TabsContent value="taxes" className="mt-4">
-          <TaxManager settings={settings} onChange={update} />
+        <TabsContent value="categories" className="mt-4">
+          <CategoriesManager settings={settings} onChange={update} />
+        </TabsContent>
+        <TabsContent value="billing" className="mt-4">
+          <BillingDetailsManager settings={settings} onChange={update} />
+        </TabsContent>
+        <TabsContent value="documents" className="mt-4">
+          <DocumentsManager settings={settings} onChange={update} />
         </TabsContent>
         <TabsContent value="areas" className="mt-4">
           <AreasManager settings={settings} onChange={update} />

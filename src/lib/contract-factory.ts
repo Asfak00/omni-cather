@@ -20,15 +20,23 @@ function randomOrderNumber() {
   return String(Math.floor(10_000_000 + Math.random() * 89_999_999));
 }
 
-export function buildDefaultDocuments(): EventDocument[] {
-  return DOC_NAMES.map((name) => ({
+export function buildDefaultDocuments(
+  settings?: RestaurantSettings
+): EventDocument[] {
+  // Settings → Documents controls which layouts exist and which are
+  // internal-only (never shared with guests).
+  const layouts =
+    settings?.docLayouts?.filter((l) => l.enabled) ??
+    DOC_NAMES.map((name) => ({ name, internal: name === "Kitchen Sheet" }));
+
+  return layouts.map(({ name, internal }) => ({
     id: randomId("doc"),
     name,
     format: "PDF",
     // BEO & Contract require signatures, the rest are informational
     status: name === "Banquet Event Order" || name === "Contract" ? "not_signed" : "n/a",
     audience: DOC_META[name].audience,
-    shareable: name !== "Kitchen Sheet",
+    shareable: !internal,
     linkable: true,
   }));
 }
@@ -79,7 +87,7 @@ export function createContractFromContact(
       transferFinancialsToEvent: true,
     },
 
-    documents: buildDefaultDocuments(),
+    documents: buildDefaultDocuments(settings),
     createdAt: now,
     updatedAt: now,
   };

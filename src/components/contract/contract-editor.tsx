@@ -175,7 +175,8 @@ export function ContractEditor({ initialContract, settings, ghlContactUrl }: Pro
         <LineItemsSection
           section="food"
           items={contract.lineItems}
-          menus={settings.menus}
+          menus={settings.menus.filter((m) => !m.deleted)}
+          categories={settings.categories}
           expectedGuests={contract.expectedGuests}
           onItemsChange={(lineItems) => update({ lineItems })}
         />
@@ -184,7 +185,8 @@ export function ContractEditor({ initialContract, settings, ghlContactUrl }: Pro
         <LineItemsSection
           section="beverage"
           items={contract.lineItems}
-          menus={settings.menus}
+          menus={settings.menus.filter((m) => !m.deleted)}
+          categories={settings.categories}
           expectedGuests={contract.expectedGuests}
           onItemsChange={(lineItems) => update({ lineItems })}
         />
@@ -193,7 +195,8 @@ export function ContractEditor({ initialContract, settings, ghlContactUrl }: Pro
         <LineItemsSection
           section="other"
           items={contract.lineItems}
-          menus={settings.menus}
+          menus={settings.menus.filter((m) => !m.deleted)}
+          categories={settings.categories}
           expectedGuests={contract.expectedGuests}
           onItemsChange={(lineItems) => update({ lineItems })}
         />

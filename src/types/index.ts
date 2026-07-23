@@ -30,12 +30,11 @@ export type EventStatus =
   | "CLOSED"
   | "LOST";
 
-export type LineItemCategory =
-  | "Audio/Visual"
-  | "Beverage"
-  | "Food"
-  | "Labor"
-  | "Misc";
+/**
+ * Category names are managed in Restaurant Settings → Menu Item
+ * Categories (Audio/Visual, Beverage, Food, Labor, Misc by default).
+ */
+export type LineItemCategory = string;
 
 export type ApplicableCharge = "Admin Fee" | "Gratuity" | "Sales Tax";
 
@@ -263,6 +262,8 @@ export interface MenuItem {
   id: string;
   name: string;
   description?: string;
+  /** default quantity suggested when added to a contract */
+  defaultQty?: number;
   price: number | null; // null → header/choice rows like "STARTERS (Choice of one)"
   category: LineItemCategory;
   applicableCharges: ApplicableCharge[];
@@ -273,9 +274,51 @@ export interface MenuItem {
 export interface MenuGroup {
   id: string;
   name: string; // e.g. "Prefixe Menu $108"
+  description?: string;
   /** which contract section items land in by default */
   defaultSection: LineItemSection;
   items: MenuItem[];
+  createdAt?: string;
+  deleted?: boolean;
+}
+
+/** Menu Item Category (Settings → Menu Item Categories) */
+export interface ItemCategory {
+  id: string;
+  /** customer-facing, e.g. "Food" */
+  name: string;
+  /** internal reference, e.g. "Food for Location 1" */
+  internalName?: string;
+  /** billing details pre-selected when this category is assigned */
+  defaultCharges: ApplicableCharge[];
+  deleted?: boolean;
+}
+
+/** Document Billing Detail (Settings → Billing Details) */
+export interface BillingDetailSetting {
+  id: string;
+  /** maps to the built-in rate fields when set */
+  builtin?: ApplicableCharge;
+  /** customer-facing description, e.g. "Sales Tax" */
+  description: string;
+  internalName?: string;
+  /** "8.875%" (percentage) or "500" (dollar amount) */
+  defaultValue: string;
+  inclusive?: boolean;
+  /** locations this detail applies to */
+  locations?: string[];
+  overridingValue?: string;
+  /** other billing details whose totals are included in this calc */
+  associated?: string[];
+  deleted?: boolean;
+}
+
+/** Per-document layout config (Settings → Documents) */
+export interface DocLayoutSetting {
+  name: DocName;
+  enabled: boolean;
+  /** internal-only docs (e.g. Kitchen Sheet) are never shared */
+  internal?: boolean;
 }
 
 export interface VenueArea {
@@ -287,11 +330,20 @@ export interface VenueArea {
 
 export interface RestaurantSettings {
   venueName: string;
+  /** picklists */
   menus: MenuGroup[];
+  /** menu item categories with default billing details */
+  categories: ItemCategory[];
+  /** document billing details (Sales Tax, Gratuity, Admin Fee, ...) */
+  billingDetails: BillingDetailSetting[];
+  /** which documents are generated for each contract */
+  docLayouts: DocLayoutSetting[];
+  docQrEnabled?: boolean;
   areas: VenueArea[];
   eventStyles: string[];
   eventTypes: string[];
   owners: { id: string; name: string; email?: string }[];
+  /** derived from the built-in billing details; used by calculations */
   taxes: {
     salesTaxRate: number;
     gratuityRate: number;

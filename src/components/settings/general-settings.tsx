@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 function randomId() {
   return `owner_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
@@ -112,6 +113,47 @@ export function GeneralSettings({ settings, onChange }: Props) {
           onChange={(eventTypes) => onChange({ eventTypes })}
         />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Deposit</CardTitle>
+          <CardDescription>
+            Default deposit applied to new contracts (% of Grand Total).
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="relative max-w-40">
+            <Input
+              type="number"
+              min={0}
+              className="pr-7"
+              value={settings.defaultDepositPercent || ""}
+              onChange={(e) =>
+                onChange({ defaultDepositPercent: Number(e.target.value) || 0 })
+              }
+            />
+            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+              %
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Default Terms &amp; Conditions</CardTitle>
+          <CardDescription>
+            Pre-filled into every new contract; editable per contract.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RichTextEditor
+            rows={10}
+            value={settings.defaultTerms}
+            onChange={(defaultTerms) => onChange({ defaultTerms })}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

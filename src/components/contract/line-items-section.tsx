@@ -4,6 +4,7 @@ import * as React from "react";
 import { Expand } from "lucide-react";
 import type {
   ContractLineItem,
+  ItemCategory,
   LineItemSection,
   MenuGroup,
 } from "@/types";
@@ -27,6 +28,7 @@ interface Props {
   section: LineItemSection;
   items: ContractLineItem[];
   menus: MenuGroup[];
+  categories: ItemCategory[];
   expectedGuests: number;
   onItemsChange: (items: ContractLineItem[]) => void;
 }
@@ -35,6 +37,7 @@ export function LineItemsSection({
   section,
   items,
   menus,
+  categories,
   expectedGuests,
   onItemsChange,
 }: Props) {
@@ -139,6 +142,7 @@ export function LineItemsSection({
             <LineItemRow
               key={item.id}
               item={item}
+              categories={categories}
               expanded={expanded.has(item.id)}
               onToggleExpand={() => toggleExpand(item.id)}
               onChange={(patch) => updateItem(item.id, patch)}
