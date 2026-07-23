@@ -2,9 +2,8 @@ import { promises as fs } from "fs";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { getContract, saveContract } from "@/lib/store/contracts";
+import { uploadsDir } from "@/lib/store/paths";
 import type { AttachedFile } from "@/types";
-
-const UPLOAD_DIR = path.join(process.cwd(), "data", "uploads");
 
 const MAX_SIZE = 15 * 1024 * 1024; // 15 MB
 
@@ -26,12 +25,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   const fileId = `file_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
-  const dir = path.join(UPLOAD_DIR, id);
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(
-    path.join(dir, fileId),
-    Buffer.from(await file.arrayBuffer())
-  );
+  const dir = path.join(uploadsDir(), id);
+  try {
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(
+      path.join(dir, fileId),
+      Buffer.from(await file.arrayBuffer())
+    );
+  } catch {
+    return NextResponse.json(
+      { error: "File storage is unavailable on this host" },
+      { status: 507 }
+    );
+  }
 
   const attachment: AttachedFile = {
     id: fileId,

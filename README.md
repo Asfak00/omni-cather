@@ -70,6 +70,37 @@ whole flow is testable immediately.
 | `/settings/restaurant` | Menus, taxes & fees, venue areas, owners, event styles/types, default terms |
 | `/settings/theme` | Theme colors, fonts, heading/paragraph sizes, radius — live preview + auto-save |
 
+## Deploying
+
+### Netlify
+
+The repo ships with a [netlify.toml](netlify.toml) — connect the repo and
+deploy; the official Next.js runtime plugin handles the App Router and API
+routes automatically. **Important:** if the site was created before this
+file existed, clear any custom *Publish directory* in Site settings → Build
+& deploy (it must be left to the plugin) and trigger "Clear cache and
+deploy site".
+
+Set your environment variables in Site settings → Environment:
+
+```
+GHL_API_KEY=pit-...
+GHL_LOCATION_ID=...
+```
+
+**Storage on serverless hosts:** Netlify/Vercel functions have a read-only
+project filesystem, so the JSON store automatically falls back to `/tmp` +
+an in-memory mirror (see `src/lib/store/file-store.ts`). That keeps the
+whole app working, but `/tmp` is per-instance and ephemeral — edits can
+reset between cold starts. For durable production data either:
+
+- set `DATA_DIR` to a mounted persistent disk (self-hosted / Render /
+  Railway volumes), or
+- deploy with `npm run build && npm run start` on any Node host, or
+- keep Netlify for the UI and rely on GHL as the source of truth
+  (settings already mirror to a GHL Custom Value; contacts, messages and
+  notes sync live).
+
 ## Folder structure
 
 ```

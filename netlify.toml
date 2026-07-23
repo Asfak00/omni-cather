@@ -1,0 +1,14 @@
+# Netlify configuration for the GHL Event Manager (Next.js App Router)
+#
+# The official Next.js runtime plugin turns App Router pages and API
+# routes into Netlify Functions automatically. Do NOT set a custom
+# publish directory — the plugin manages output itself.
+
+[build]
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
